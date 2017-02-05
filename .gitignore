@@ -1,0 +1,3 @@
+application/config/*
+vendor/*
+application/logs/*
