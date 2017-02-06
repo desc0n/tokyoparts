@@ -118,7 +118,7 @@ $amount = (int)$order['delivery_price'];
                 <div class="form-group">
                     <label for="inputTc" class="col-lg-3 control-label">ТК</label>
                     <div class="col-lg-9">
-                        <input type="text" class="form-control" name="tc" id="inputTc" placeholder="Транспортная компания" value="<?=$order['tc'];?>">
+                        <input type="text" class="form-control" name="tc" id="inputTc" placeholder="Транспортная компания" value="<?=$order['tc'];?>" autocomplete="off">
                     </div>
                 </div>
                 <div class="form-group">

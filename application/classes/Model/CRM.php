@@ -877,6 +877,24 @@ class Model_CRM extends Kohana_Model
             ->as_array(null, 'name')
             ;
     }
+
+    /**
+     * @param string $query
+     * @return array
+     */
+    public function findTransportCompaniesByQuery($query)
+    {
+        if (empty($query)) {
+            return [];
+        }
+
+        return DB::select('name')
+            ->from('data__transport_companies')
+            ->where('name', 'like', "%$query%")
+            ->execute()
+            ->as_array(null, 'name')
+            ;
+    }
 }
 ?>
 
