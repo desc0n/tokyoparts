@@ -94,7 +94,7 @@ $amount = (int)$order['delivery_price'];
                 <div class="form-group">
                     <label for="inputCity" class="col-lg-3 control-label">Город</label>
                     <div class="col-lg-9">
-                        <input type="text" class="form-control" name="city" id="inputCity" placeholder="Город" value="<?=$order['city'];?>">
+                        <input type="text" class="form-control" name="city" id="inputCity" placeholder="Город" value="<?=$order['city'];?>" autocomplete="off">
                     </div>
                 </div>
                 <div class="form-group">

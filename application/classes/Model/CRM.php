@@ -859,6 +859,24 @@ class Model_CRM extends Kohana_Model
 
         return implode(' ', array_reverse($o));
     }
+
+    /**
+     * @param string $query
+     * @return array
+     */
+    public function findCitiesByQuery($query)
+    {
+        if (empty($query)) {
+            return [];
+        }
+
+        return DB::select('name')
+            ->from('addresses__cities')
+            ->where('name', 'like', "%$query%")
+            ->execute()
+            ->as_array(null, 'name')
+            ;
+    }
 }
 ?>
 

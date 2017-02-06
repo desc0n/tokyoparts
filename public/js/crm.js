@@ -3,22 +3,13 @@ $(document).ready(function () {
         addNeedPart();
     });
     $('.order-data #inputBrand').typeahead({
-        source: function (query, process) {
-            return $.get('/ajax/find_vehicles_brand', {query: query}, function (data) {
-                var json = JSON.parse(data); // string to json
-
-                return process(json);
-            });
-        }
+        source: function (query, process) {return $.get('/ajax/find_vehicles_brand', {query: query}, function (data) {var json = JSON.parse(data);return process(json);});}
     });
     $('.order-data #inputModel').typeahead({
-        source: function (query, process) {
-            return $.get('/ajax/find_vehicles_model', {brand: $('.order-data #inputBrand').val(), query: query}, function (data) {
-                var json = JSON.parse(data); // string to json
-
-                return process(json);
-            });
-        }
+        source: function (query, process) {return $.get('/ajax/find_vehicles_model', {brand: $('.order-data #inputBrand').val(), query: query}, function (data) {var json = JSON.parse(data);return process(json);});}
+    });
+    $('.order-data #inputCity').typeahead({
+        source: function (query, process) {return $.get('/ajax/find_city', {query: query}, function (data) {var json = JSON.parse(data);return process(json);});}
     });
     $('#inputLeadTime').datetimepicker({locale: 'ru'});
     $('#firstDate').datetimepicker({locale: 'ru',format: 'DD.MM.YYYY'});

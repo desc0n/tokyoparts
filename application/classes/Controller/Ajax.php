@@ -51,4 +51,9 @@ class Controller_Ajax extends Controller
     {
         $this->response->body(json_encode($this->crmModel->findVehicleModels($this->request->query('brand'), $this->request->query('query'))));
     }
+
+    public function action_find_city()
+    {
+        $this->response->body(json_encode($this->crmModel->findCitiesByQuery($this->request->query('query'))));
+    }
 }
