@@ -105,4 +105,4 @@ function writeOrderSpare(itemId, jsonData) {
 
     $('#setSpareModal').modal('toggle');
 }
-function removeSpare(spare) {var den = confirm('Подтверждает удаление позиции заказа?');if (den){$.ajax({url:'/ajax/remove_spare', type: 'POST', async: true, data: {spare:spare}}).done(function () {$('.spare-row[data-id=' + spare +']').remove();});}}
+function removeSpare(spare) {var den = confirm('Подтверждает удаление позиции заказа?');if (den){$.ajax({url:'/ajax/remove_spare', type: 'POST', async: true, data: {spareId:spare}}).done(function () {$('.spare-row[data-id=' + spare +']').remove();});}}

@@ -53,9 +53,9 @@
             <h4 class="text-center">Информация о клиенте</h4>
             <div class="form-horizontal" role="form">
                 <div class="form-group">
-                    <label for="inputLastName" class="col-lg-3 control-label">Фамилия</label>
+                    <label for="inputSecondName" class="col-lg-3 control-label">Фамилия</label>
                     <div class="col-lg-9">
-                        <input type="text" class="form-control" name="last_name" id="inputLastName" placeholder="Фамилия" value="<?=Arr::get($order, 'second_name');?>">
+                        <input type="text" class="form-control" name="second_name" id="inputSecondName" placeholder="Фамилия" value="<?=Arr::get($order, 'second_name');?>">
                     </div>
                 </div>
                 <div class="form-group">
