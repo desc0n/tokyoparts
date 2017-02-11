@@ -18,7 +18,9 @@ $(document).ready(function () {
     $('#firstDate').datetimepicker({locale: 'ru',format: 'DD.MM.YYYY'});
     $('#lastDate').datetimepicker({locale: 'ru',format: 'DD.MM.YYYY'});
     $('.orders-list-table .action-ceil').on('click', function () {document.location='/crm/order/' + $(this).parent('tr').data('order-id');});
+    if ($('#searchSpareByApiPreview').length && $('#searchOfferForm input[type=text][name=article]').val() != '') {searchSpareByApi($('#searchOfferForm input[type=text][name=article]').val());}
 });
+function getOrderId() {return $('#orderId').val();}
 function addNeedPart() {
     $('#needParts').append(
         '<div class="form-group col-lg-12">' +
@@ -106,3 +108,50 @@ function writeOrderSpare(itemId, jsonData) {
     $('#setSpareModal').modal('toggle');
 }
 function removeSpare(spare) {var den = confirm('Подтверждает удаление позиции заказа?');if (den){$.ajax({url:'/ajax/remove_spare', type: 'POST', async: true, data: {spareId:spare}}).done(function () {$('.spare-row[data-id=' + spare +']').remove();});}}
+function searchSpareByApi(article) {
+    $('#searchSpareByApiPreview td').append('<div class="progress progress-striped active">' +
+        '<div class="progress-bar"  role="progressbar" aria-valuemin="0" aria-valuemax="100"></div>' +
+        '</div>');
+    $('#searchSpareByApiPreview td').find('.progress-bar').animate({width:'100%'}, 1000);
+    $.ajax({url:'/ajax/search_spare_by_api', type: 'POST', async: true, data:{article:article}}).done(function (data) {
+        writeSearchSpareByApiOfferResult(data);
+    });
+}
+function writeSearchSpareByApiOfferResult(jsonData) {
+    var data = JSON.parse(jsonData);
+
+    $('#searchSpareByApiPreview').remove();
+
+    for (i = 0;i < data.length;i++) {
+        $('.search-spares-table tbody').append(
+            '<tr>' +
+            '<td>' +
+            data[i].supplier_name +
+            '</td>' +
+            '<td>' +
+            data[i].brand +
+            '</td>' +
+            '<td>' +
+            data[i].article +
+            '</td>' +
+            '<td>' +
+            data[i].price +
+            '</td>' +
+            '<td>' +
+            data[i].quantity +
+            '</td>' +
+            '<td class="text-center">' +
+            '<button class="btn btn-default" onclick="addSpareToOrderFromSearch(' + data[i].id + ')" title="Добавить в заказ">' +
+            '<span class="fa fa-plus-circle"></span>' +
+            '</button>' +
+            '<button class="btn btn-default" onclick="searchOrderSpare(\'' + getOrderId() +'\', ' + data[i].id + ');">' +
+            '<span class="fa fa-refresh"></span>' +
+            '</button>' +
+            '</td>' +
+            '</td>' +
+            '</tr>'
+        );
+    }
+
+    $('#searchModal').modal('toggle');
+}

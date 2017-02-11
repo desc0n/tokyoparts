@@ -422,6 +422,39 @@ class Model_CRM extends Kohana_Model
     }
 
     /**
+     * @param int $supplierId
+     * @param int $vendorId
+     * @return mixed
+     */
+    public function findSupplierItemBySupplierAndVendorId($supplierId, $vendorId)
+    {
+        return DB::select()
+            ->from('suppliers__items')
+            ->where('vendor_id', '=', $vendorId)
+            ->and_where('supplier_id', '=', $supplierId)
+            ->limit(1)
+            ->execute()
+            ->current()
+            ;
+    }
+
+    /**
+     * @param string $updateTask
+     * @return mixed
+     */
+    public function findSupplierItemByUpdateTask($updateTask)
+    {
+        return DB::select('si.*', ['ss.name', 'supplier_name'])
+            ->from(['suppliers__items', 'si'])
+            ->join(['suppliers__suppliers', 'ss'])
+            ->on('ss.id', '=', 'si.supplier_id')
+            ->where('update_task', '=', $updateTask)
+            ->execute()
+            ->as_array()
+            ;
+    }
+
+    /**
      * @param int $spareId
      * @param array $params
      */
@@ -894,6 +927,92 @@ class Model_CRM extends Kohana_Model
             ->execute()
             ->as_array(null, 'name')
             ;
+    }
+
+
+    /**
+     * @param string $article
+     * @return null|string
+     */
+    public function searchSpareByApi($article)
+    {
+        /** @var Model_API $apiModel */
+        $apiModel = Model::factory('API');
+
+
+        $apiData = [];
+        $suppliers = $this->getSuppliersList();
+
+        foreach ($suppliers as $supplier) {
+            if (!empty($supplier['api_name'])) {
+                $apiData[] = [
+                    $supplier['id'] => $apiModel->getApiData($supplier['api_name'], $article)
+                ];
+            }
+        }
+
+        return $this->loadSupplierPriceFromApi($apiData);
+    }
+
+    /**
+     * @param array $apiData
+     * @return null|string
+     */
+    public function loadSupplierPriceFromApi(array $apiData)
+    {
+        if (empty($apiData)) {
+            return null;
+        }
+
+        $now = new DateTime();
+        $updateTask = $now->format('YmdHis');
+        $loadPriceData = [];
+
+        foreach ($apiData as $supplierApiData) {
+            foreach ($supplierApiData as $supplierId => $data) {
+                foreach ($data as $value) {
+                    $validData = $this->validateLoadPrice(
+                        $supplierId,
+                        $value['brand'],
+                        $value['article'],
+                        $value['name'],
+                        $value['price'],
+                        $value['quantity']
+                    );
+
+                    if (empty($validData)) {
+                        continue;
+                    }
+
+                    array_push($validData, $value['vendor_id']);
+                    array_push($validData, $updateTask);
+
+                    $loadPriceData[] = $validData;
+                }
+            }
+        }
+
+        foreach ($loadPriceData as $validData) {
+            $supplierItem = $this->findSupplierItemBySupplierAndVendorId($validData[0], $validData[7]);
+
+            if (empty($supplierItem)) {
+                DB::insert('suppliers__items', ['supplier_id', 'brand', 'article', 'article_search', 'name', 'price', 'quantity', 'vendor_id', 'update_task'])
+                    ->values($validData)
+                    ->execute();
+            } else{
+                DB::update('suppliers__items')
+                    ->set([
+                        'price' => $validData[5],
+                        'quantity' => $validData[6],
+                        'update_task' => $validData[8]
+                    ])
+                    ->where('id', '=', $supplierItem['id'])
+                    ->execute()
+                ;
+            }
+        }
+
+        return $updateTask;
     }
 }
 ?>

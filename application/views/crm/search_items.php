@@ -44,6 +44,7 @@
                     </td>
                 </tr>
             <?}?>
+            <tr id="searchSpareByApiPreview"><td colspan="6"></td></tr>
             </tbody>
         </table>
     </div>
