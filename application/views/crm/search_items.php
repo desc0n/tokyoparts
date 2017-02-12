@@ -21,6 +21,7 @@
                 <th>Поставщик</th>
                 <th>Бренд</th>
                 <th>Артикул</th>
+                <th>Название</th>
                 <th>Цена</th>
                 <th>Наличие</th>
                 <th class="text-center">Действия</th>
@@ -32,6 +33,7 @@
                     <td><?=$item['supplier_name'];?></td>
                     <td class="item-brand"><?=$item['brand'];?></td>
                     <td class="item-article"><?=$item['article'];?></td>
+                    <td><?=$item['name'];?></td>
                     <td><?=$item['price'];?></td>
                     <td><?=$item['quantity'];?></td>
                     <td class="text-center">
@@ -44,7 +46,7 @@
                     </td>
                 </tr>
             <?}?>
-            <tr id="searchSpareByApiPreview"><td colspan="6"></td></tr>
+            <tr id="searchSpareByApiPreview"><td colspan="7"></td></tr>
             </tbody>
         </table>
     </div>
@@ -65,6 +67,7 @@
                         <th>Название</th>
                         <th>Бренд</th>
                         <th>Артикул</th>
+                        <th>Название</th>
                         <th>Цена</th>
                         <th>Кол-во</th>
                         <th class="text-center">Действия</th>

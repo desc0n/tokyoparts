@@ -52,6 +52,9 @@ function writeSearchOrderSpareOfferResult(id, jsonData) {
                 data[i].article +
             '</td>' +
             '<td>' +
+                data[i].name +
+            '</td>' +
+            '<td>' +
                 data[i].price +
             '</td>' +
             '<td>' +
@@ -91,6 +94,9 @@ function writeOrderSpare(itemId, jsonData) {
             '</td>' +
             '<td>' +
             data[i].article +
+            '</td>' +
+            '<td>' +
+            data[i].name +
             '</td>' +
             '<td>' +
             data[i].offer_price +
@@ -133,6 +139,9 @@ function writeSearchSpareByApiOfferResult(jsonData) {
             '</td>' +
             '<td>' +
             data[i].article +
+            '</td>' +
+            '<td>' +
+            data[i].name +
             '</td>' +
             '<td>' +
             data[i].price +

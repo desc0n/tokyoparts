@@ -364,11 +364,17 @@ class Model_CRM extends Kohana_Model
             return [];
         }
 
+        $updateTask = $this->searchSpareByApi($article);
+
         return DB::select('si.*', ['ss.name', 'supplier_name'])
             ->from(['suppliers__items', 'si'])
             ->join(['suppliers__suppliers', 'ss'])
                 ->on('ss.id', '=', 'si.supplier_id')
-            ->where('si.article_search', 'LIKE', "%$article%")
+            ->where('si.article_search', '=', $article)
+            ->or_where_open()
+                ->where('si.update_task', '=', $updateTask)
+                ->and_where('si.update_task', 'IS NOT', null)
+            ->or_where_close()
             ->execute()
             ->as_array()
         ;

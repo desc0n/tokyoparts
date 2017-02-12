@@ -233,6 +233,7 @@ $amount = (int)$order['delivery_price'];
                         <th>Поставщик</th>
                         <th>Бренд</th>
                         <th>Артикул</th>
+                        <th>Название</th>
                         <th>Цена</th>
                         <th>Наличие</th>
                         <th class="text-center">Действия</th>
