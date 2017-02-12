@@ -261,24 +261,54 @@ class Model_CRM extends Kohana_Model
 
     public function loadSupplierPrice(array $fileData, $supplierId)
     {
-        DB::delete('suppliers__items')
-            ->where('supplier_id', '=', $supplierId)
-            ->execute()
-        ;
-
         $data = file($fileData['priceName']['tmp_name']);
+        $updateTask = $this->generateUpdateTask();
 
         foreach ($data as $row) {
             $ceils = explode(';', $row);
 
-            $validateData = $this->validateLoadPrice((int)$supplierId, Arr::get($ceils, 0), Arr::get($ceils, 1), Arr::get($ceils, 2), Arr::get($ceils, 3), Arr::get($ceils, 4));
+            $validData = $this->validateLoadPrice((int)$supplierId, Arr::get($ceils, 0), Arr::get($ceils, 1), Arr::get($ceils, 2), Arr::get($ceils, 3), Arr::get($ceils, 4));
 
-            if (!empty($validateData)) {
-                DB::insert('suppliers__items', ['supplier_id', 'brand', 'article', 'article_search', 'name', 'price', 'quantity'])
-                    ->values($validateData)
-                    ->execute();
+            array_push($validData, null);
+            array_push($validData, $updateTask);
+
+            if (!empty($validData)) {
+                $this->setSupplierItem($validData);
             }
 
+            DB::update('suppliers__items')
+                ->set([
+                    'quantity' => 0
+                ])
+                ->where('supplier_id', '=', $supplierId)
+                ->and_where('update_task', '!=', $updateTask)
+                ->execute();
+        }
+    }
+
+    private function setSupplierItem($validData)
+    {
+        if (count($validData) === 10) {
+            if(!empty($validData[8])) {
+                $supplierItem = $this->findSupplierItemBySupplierAndVendorId($validData[0], $validData[8]);
+            } else {
+                $supplierItem = $this->findSupplierItemBySupplierAndHash($validData[0], $validData[7]);
+            }
+
+            if (empty($supplierItem)) {
+                DB::insert('suppliers__items', ['supplier_id', 'brand', 'article', 'article_search', 'name', 'price', 'quantity', 'item_hash', 'vendor_id', 'update_task'])
+                    ->values($validData)
+                    ->execute();
+            } else {
+                DB::update('suppliers__items')
+                    ->set([
+                        'price' => $validData[5],
+                        'quantity' => $validData[6],
+                        'update_task' => $validData[9],
+                    ])
+                    ->where('id', '=', $supplierItem['id'])
+                    ->execute();
+            }
         }
     }
 
@@ -301,7 +331,7 @@ class Model_CRM extends Kohana_Model
         $price = $this->validatePrice($price);
         $quantity = $this->validateQuantity($quantity);
 
-        return [$supplierId, $brand, $article, $this->getSearchArticle($article), $name, $price, $quantity];
+        return [$supplierId, $brand, $article, $this->getSearchArticle($article), $name, $price, $quantity, md5($brand . $article)];
     }
 
     public function validateQuantity($value)
@@ -429,7 +459,7 @@ class Model_CRM extends Kohana_Model
 
     /**
      * @param int $supplierId
-     * @param int $vendorId
+     * @param string $vendorId
      * @return mixed
      */
     public function findSupplierItemBySupplierAndVendorId($supplierId, $vendorId)
@@ -437,6 +467,24 @@ class Model_CRM extends Kohana_Model
         return DB::select()
             ->from('suppliers__items')
             ->where('vendor_id', '=', $vendorId)
+            ->and_where('supplier_id', '=', $supplierId)
+            ->limit(1)
+            ->execute()
+            ->current()
+            ;
+    }
+
+
+    /**
+     * @param int $supplierId
+     * @param string $hash
+     * @return mixed
+     */
+    public function findSupplierItemBySupplierAndHash($supplierId, $hash)
+    {
+        return DB::select()
+            ->from('suppliers__items')
+            ->where('item_hash', '=', $hash)
             ->and_where('supplier_id', '=', $supplierId)
             ->limit(1)
             ->execute()
@@ -970,8 +1018,7 @@ class Model_CRM extends Kohana_Model
             return null;
         }
 
-        $now = new DateTime();
-        $updateTask = $now->format('YmdHis');
+        $updateTask = $this->generateUpdateTask();
         $loadPriceData = [];
 
         foreach ($apiData as $supplierApiData) {
@@ -999,26 +1046,16 @@ class Model_CRM extends Kohana_Model
         }
 
         foreach ($loadPriceData as $validData) {
-            $supplierItem = $this->findSupplierItemBySupplierAndVendorId($validData[0], $validData[7]);
-
-            if (empty($supplierItem)) {
-                DB::insert('suppliers__items', ['supplier_id', 'brand', 'article', 'article_search', 'name', 'price', 'quantity', 'vendor_id', 'update_task'])
-                    ->values($validData)
-                    ->execute();
-            } else{
-                DB::update('suppliers__items')
-                    ->set([
-                        'price' => $validData[5],
-                        'quantity' => $validData[6],
-                        'update_task' => $validData[8]
-                    ])
-                    ->where('id', '=', $supplierItem['id'])
-                    ->execute()
-                ;
-            }
+            $this->setSupplierItem($validData);
         }
 
         return $updateTask;
+    }
+
+    private function generateUpdateTask()
+    {
+        $now = new DateTime();
+        return $now->format('YmdHis');
     }
 }
 ?>
