@@ -40,31 +40,33 @@ function writeSearchOrderSpareOfferResult(id, jsonData) {
     $('#searchModalBody .search-spares-table tbody').html('');
 
     for (i = 0;i < data.length;i++) {
-        $('#searchModalBody .search-spares-table tbody').append(
-            '<tr>' +
-            '<td>' +
-                data[i].supplier_name +
-            '</td>' +
-            '<td>' +
-                data[i].brand +
-            '</td>' +
-            '<td>' +
-                data[i].article +
-            '</td>' +
-            '<td>' +
-                data[i].name +
-            '</td>' +
-            '<td>' +
-                data[i].price +
-            '</td>' +
-            '<td>' +
-                data[i].quantity +
-            '</td>' +
-            '<td class="text-center">' +
-                '<button class="btn btn-default" onclick="setOrderSpareBySearch(' + data[i].id + ', ' + id + ');"><span class="fa fa-check-circle"></span></button>' +
-            '</td>' +
-            '</tr>'
-        );
+        if(!$('#searchItemRow' + data[i].id).length) {
+            $('#searchModalBody .search-spares-table tbody').append(
+                '<tr id="searchItemRow' + data[i].id + '">' +
+                '<td>' +
+                    data[i].supplier_name +
+                '</td>' +
+                '<td>' +
+                    data[i].brand +
+                '</td>' +
+                '<td>' +
+                    data[i].article +
+                '</td>' +
+                '<td>' +
+                    data[i].name +
+                '</td>' +
+                '<td>' +
+                    data[i].price +
+                '</td>' +
+                '<td>' +
+                    data[i].quantity +
+                '</td>' +
+                '<td class="text-center">' +
+                    '<button class="btn btn-default" onclick="setOrderSpareBySearch(' + data[i].id + ', ' + id + ');"><span class="fa fa-check-circle"></span></button>' +
+                '</td>' +
+                '</tr>'
+            );
+        }
     }
 
     $('#searchModal').modal('toggle');
@@ -129,37 +131,39 @@ function writeSearchSpareByApiOfferResult(jsonData) {
     $('#searchSpareByApiPreview').remove();
 
     for (i = 0;i < data.length;i++) {
-        $('.search-spares-table tbody').append(
-            '<tr>' +
-            '<td>' +
-            data[i].supplier_name +
-            '</td>' +
-            '<td>' +
-            data[i].brand +
-            '</td>' +
-            '<td>' +
-            data[i].article +
-            '</td>' +
-            '<td>' +
-            data[i].name +
-            '</td>' +
-            '<td>' +
-            data[i].price +
-            '</td>' +
-            '<td>' +
-            data[i].quantity +
-            '</td>' +
-            '<td class="text-center">' +
-            '<button class="btn btn-default" onclick="addSpareToOrderFromSearch(' + data[i].id + ')" title="Добавить в заказ">' +
-            '<span class="fa fa-plus-circle"></span>' +
-            '</button>' +
-            '<button class="btn btn-default" onclick="searchOrderSpare(\'' + getOrderId() +'\', ' + data[i].id + ');">' +
-            '<span class="fa fa-refresh"></span>' +
-            '</button>' +
-            '</td>' +
-            '</td>' +
-            '</tr>'
-        );
+        if(!$('#searchItemRow' + data[i].id).length) {
+            $('.search-spares-table tbody').append(
+                '<tr id="searchItem' + data[i].id + '">' +
+                '<td>' +
+                data[i].supplier_name +
+                '</td>' +
+                '<td>' +
+                data[i].brand +
+                '</td>' +
+                '<td>' +
+                data[i].article +
+                '</td>' +
+                '<td>' +
+                data[i].name +
+                '</td>' +
+                '<td>' +
+                data[i].price +
+                '</td>' +
+                '<td>' +
+                data[i].quantity +
+                '</td>' +
+                '<td class="text-center">' +
+                '<button class="btn btn-default" onclick="addSpareToOrderFromSearch(' + data[i].id + ')" title="Добавить в заказ">' +
+                '<span class="fa fa-plus-circle"></span>' +
+                '</button>' +
+                '<button class="btn btn-default" onclick="searchOrderSpare(\'' + getOrderId() +'\', ' + data[i].id + ');">' +
+                '<span class="fa fa-refresh"></span>' +
+                '</button>' +
+                '</td>' +
+                '</td>' +
+                '</tr>'
+            );
+        }
     }
 
     $('#searchModal').modal('toggle');
