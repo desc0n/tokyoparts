@@ -19,7 +19,8 @@ class Model_API extends Kohana_Model
             'password' => 'n012nn125',
             'url' => 'http://zakaz.mxgroup.ru/mxapi/',
             'type' => 'get',
-            'responseType' => 'curl'
+            'responseType' => 'curl',
+            'access_warehouse' => [84,91,133]
         ]
     ];
 
@@ -122,14 +123,16 @@ class Model_API extends Kohana_Model
 
         if(!empty($responseData['result'])) {
             foreach ($responseData['result'] as $result) {
-                $data[] = [
-                    'brand' => Arr::get($result, 'brand'),
-                    'article' => Arr::get($result, 'articul'),
-                    'name' => Arr::get($result, 'name'),
-                    'price' => Arr::get($result, 'discountprice', 0),
-                    'quantity' => Arr::get($result, 'count', 0),
-                    'vendor_id' => Arr::get($result, 'code')
-                ];
+                if (in_array(Arr::get($result, 'id'), $this->apiSettings['mxGroup']['access_warehouse'])) {
+                    $data[] = [
+                        'brand' => Arr::get($result, 'brand'),
+                        'article' => Arr::get($result, 'articul'),
+                        'name' => Arr::get($result, 'name'),
+                        'price' => Arr::get($result, 'discountprice', 0),
+                        'quantity' => Arr::get($result, 'count', 0),
+                        'vendor_id' => Arr::get($result, 'code')
+                    ];
+                }
             }
         }
 
