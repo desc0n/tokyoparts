@@ -59,13 +59,13 @@
 <!--        </tr>-->
 <!--        <tr>-->
 <!--            <td colspan=4>-->
-<!--                Индивидуальный предприниматель Шутов Сергей Юрьевич-->
+<!--                Индивидуальный предприниматель Аксенов Максим Сергеевич-->
 <!--                <p style='font-size:8pt;'>Получатель</p>-->
 <!--            </td>-->
 <!--        </tr>-->
 <!--    </table>-->
     <p style='margin-top:20px;font-weight:bold;font-size:14pt;text-align:center;'>Счет на оплату № <?=$order['id'];?> от <?=date("d.m.Y");?> г.</p><br>
-    <p>Поставщик: Индивидуальный предприниматель Шутов Сергей Юрьевич <br>
+    <p>Поставщик: Индивидуальный предприниматель Аксенов Максим Сергеевич <br>
         Покупатель: <?=$order['second_name'];?> <?=$order['first_name'];?> <?=$order['father_name'];?></p><br>
     <table width=800 cellpadding='5' cellspacing='0' style='border-collapse: collapse;font-size: 11pt;'>
         <tr>
@@ -143,7 +143,7 @@
             <td class='empty' width=2>
             </td>
             <td class='empty' style='border-bottom: 1px solid;' align=left>
-                Шутов С. Ю.
+                Аксенов М. С.
             </td>
             <td class='empty' width=2>
             </td>
