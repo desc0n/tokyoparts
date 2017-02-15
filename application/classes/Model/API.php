@@ -21,9 +21,21 @@ class Model_API extends Kohana_Model
             'type' => 'get',
             'responseType' => 'curl',
             'access_warehouse' => [84,91,133]
+        ],
+        'rossko' => [
+            'key1' => '547341ffbfbcf46a456714649a0f18b6',
+            'key2' => '3c40b79abe609d897eece6e35cf583ac',
+            'url' => 'http://vl.rossko.ru/service/v1/GetSearch?wsdl',
+            'type' => 'get',
+            'responseType' => 'soap',
+            'access_warehouse' => ['ОРИГИНАЛМ ВЛВ']
         ]
     ];
 
+    /**
+     * @param $type
+     * @return mixed|null|SoapClient
+     */
     private function getResponse($type)
     {
         switch ($type) {
@@ -36,6 +48,9 @@ class Model_API extends Kohana_Model
         return null;
     }
 
+    /**
+     * @return mixed|null
+     */
     private function getCurlResponse()
     {
         if ($this->apiUrl === null || $this->queryString === []) {
@@ -68,11 +83,26 @@ class Model_API extends Kohana_Model
         return $content;
     }
 
+    /**
+     * @return null|SoapClient
+     */
     private function getSoapResponse()
     {
+        if ($this->apiUrl === null || $this->queryString === []) {
+            return null;
+        }
 
+        return new \SoapClient($this->apiUrl, [
+            'soap_version' => SOAP_1_2,
+            'connection_timeout' => 10
+        ]);
     }
 
+    /**
+     * @param string $supplier
+     * @param string $article
+     * @return array
+     */
     public function getApiData($supplier, $article)
     {
         $apiSettings = Arr::get($this->apiSettings, $supplier, []);
@@ -90,6 +120,11 @@ class Model_API extends Kohana_Model
         return $this->parseResponse($supplier, $response);
     }
 
+    /**
+     * @param string $supplier
+     * @param string $article
+     * @return array
+     */
     private function getQueryString($supplier, $article)
     {
         switch ($supplier) {
@@ -101,21 +136,34 @@ class Model_API extends Kohana_Model
                     'password' => $this->apiSettings[$supplier]['password'],
                     'out' => 'json',
                 ];
+            case 'rossko':
+                return $article;
         }
 
         return [];
     }
 
+    /**
+     * @param $supplier
+     * @param $response
+     * @return array
+     */
     private function parseResponse($supplier, $response)
     {
         switch ($supplier) {
             case 'mxGroup':
                return $this->parseMxGroupResponse($response);
+            case 'rossko':
+               return $this->parseRosskoResponse($response);
         }
 
         return [];
     }
 
+    /**
+     * @param $response
+     * @return array
+     */
     private function parseMxGroupResponse($response)
     {
         $data = [];
@@ -132,6 +180,106 @@ class Model_API extends Kohana_Model
                         'quantity' => Arr::get($result, 'count', 0),
                         'vendor_id' => Arr::get($result, 'code')
                     ];
+                }
+            }
+        }
+
+        return $data;
+    }
+
+    /**
+     * @param null|SoapClient $client
+     * @return array
+     */
+    private function parseRosskoResponse($client)
+    {
+        $data = [];
+
+        if (empty($client)) {
+            return $data;
+        }
+
+        $client->KEY1 = $this->apiSettings['rossko']['key1'];
+        $response = $client->getSearch([
+            'KEY1' => $this->apiSettings['rossko']['key1'],
+            'KEY2' => $this->apiSettings['rossko']['key2'],
+            'TEXT' => $this->queryString
+        ]);
+
+        $responseArray = json_decode(json_encode($response), TRUE);
+
+        if (!array_key_exists('SearchResults', $responseArray)) {
+            return $data;
+        }
+
+        $apiResult = $responseArray['SearchResults']['SearchResult'];
+
+        if($apiResult['Success'] && !empty($apiResult['PartsList']['Part'])){
+            if (!empty($apiResult['PartsList']['Part']['StocksList']['Stock']['StockID'])) {
+                return $this->addSingleSpareToRosskoApiData($data, $apiResult['PartsList']['Part']);
+            }
+
+            return $this->addBatchSpareToRosskoApiData($data, $apiResult['PartsList']['Part']);
+        }
+
+        return $data;
+    }
+
+    /**
+     * @param array $data
+     * @param array $part
+     * @return array
+     */
+    private function addSingleSpareToRosskoApiData(array $data, array $part)
+    {
+        if (!empty($part['StocksList']['Stock']['StockID'])) {
+            if (in_array($part['StocksList']['Stock']['StockID'], $this->apiSettings['rossko']['access_warehouse'])) {
+                $data[] = [
+                    'brand' => $part['Brand'],
+                    'article' => $part['PartNumber'],
+                    'name' => $part['Name'],
+                    'price' => $part['StocksList']['Stock']['Price'],
+                    'quantity' => $part['StocksList']['Stock']['Count'],
+                    'vendor_id' => $part['GUID'] . $part['StocksList']['Stock']['DeliveryTime'],
+                ];
+            }
+        }
+
+        return $data;
+    }
+
+    /**
+     * @param array $data
+     * @param array $part
+     * @return array
+     */
+    private function addBatchSpareToRosskoApiData(array $data, array $part)
+    {
+        if (!empty($part['StocksList']['Stock'])) {
+            foreach ($part['StocksList']['Stock'] as $item) {
+                if (!empty($item['StockID'])) {
+                    if (in_array($item['StockID'], $this->apiSettings['rossko']['access_warehouse'])) {
+                        $data[] = [
+                            'brand' => $part['Brand'],
+                            'article' => $part['PartNumber'],
+                            'name' => $part['Name'],
+                            'price' => $item['Price'],
+                            'quantity' => $item['Count'],
+                            'vendor_id' => $part['GUID'] . $item['DeliveryTime']
+                        ];
+                    }
+                }
+            }
+        } else {
+            foreach ($part as $item) {
+                if (!empty($item['StocksList']['Stock']['StockID'])) {
+                    $data = $this->addSingleSpareToRosskoApiData($data, $item);
+
+                    continue;
+                }
+
+                if (is_array($item)) {
+                    $data = $this->addBatchSpareToRosskoApiData($data, $item);
                 }
             }
         }
