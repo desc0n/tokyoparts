@@ -23,12 +23,12 @@ class Model_API extends Kohana_Model
             'access_warehouse' => [84,91,133]
         ],
         'rossko' => [
-            'key1' => '547341ffbfbcf46a456714649a0f18b6',
-            'key2' => '3c40b79abe609d897eece6e35cf583ac',
+            'key1' => '929e473ddca098b52473628fd7546ecd',
+            'key2' => 'abeaabec87f7d6ba68724d5f007b9c07',
             'url' => 'http://vl.rossko.ru/service/v1/GetSearch?wsdl',
             'type' => 'get',
             'responseType' => 'soap',
-            'access_warehouse' => ['ОРИГИНАЛМ ВЛВ']
+            'access_warehouse' => ['ОТ0000093']
         ]
     ];
 
