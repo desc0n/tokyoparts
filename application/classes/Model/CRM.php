@@ -275,15 +275,15 @@ class Model_CRM extends Kohana_Model
             if (!empty($validData)) {
                 $this->setSupplierItem($validData);
             }
-
-            DB::update('suppliers__items')
-                ->set([
-                    'quantity' => 0
-                ])
-                ->where('supplier_id', '=', $supplierId)
-                ->and_where('update_task', '!=', $updateTask)
-                ->execute();
         }
+
+        DB::update('suppliers__items')
+            ->set([
+                'quantity' => 0
+            ])
+            ->where('supplier_id', '=', $supplierId)
+            ->and_where('update_task', '!=', $updateTask)
+            ->execute();
     }
 
     private function setSupplierItem($validData)
@@ -400,7 +400,8 @@ class Model_CRM extends Kohana_Model
             ->from(['suppliers__items', 'si'])
             ->join(['suppliers__suppliers', 'ss'])
                 ->on('ss.id', '=', 'si.supplier_id')
-            ->where('si.article_search', '=', $article)
+            ->where('si.quantity', '!=', 0)
+            ->and_where('si.article_search', '=', $article)
             ->or_where_open()
                 ->where('si.update_task', '=', $updateTask)
                 ->and_where('si.update_task', 'IS NOT', null)
