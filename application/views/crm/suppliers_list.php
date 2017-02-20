@@ -15,18 +15,23 @@
         <tr>
             <td><?=$supplier['name'];?></td>
             <td class="text-center"><?=$supplier['price_count'];?></td>
-            <td class="text-center">
-                <form role="form" method="post" enctype='multipart/form-data'>
-                    <div class="row">
-                        <div class="col-lg-4">
-                            <input type="file" name="priceName">
+            <td class="text-center row">
+                <div class="col-lg-8">
+                    <form role="form" method="post" enctype='multipart/form-data'>
+                        <div class="row">
+                            <div class="col-lg-6">
+                                <input type="file" name="priceName">
+                            </div>
+                            <div class="col-lg-6">
+                                <button type="submit" class="btn btn-default">Загрузить</button>
+                            </div>
                         </div>
-                        <div class="col-lg-4">
-                            <button type="submit" class="btn btn-default">Загрузить</button>
-                        </div>
-                    </div>
-                    <input type="hidden" name="supplierId" value="<?=$supplier['id'];?>">
-                </form>
+                        <input type="hidden" name="supplierId" value="<?=$supplier['id'];?>">
+                    </form>
+                </div>
+                <div class="col-lg-4">
+                    <button class="btn btn-danger" onclick="clearSuppliersItems(<?=$supplier['id'];?>);">Очистить прайс</button>
+                </div>
             </td>
         </tr>
         <?}?>

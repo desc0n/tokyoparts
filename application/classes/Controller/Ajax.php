@@ -62,6 +62,11 @@ class Controller_Ajax extends Controller
         $this->response->body(json_encode($this->crmModel->findTransportCompaniesByQuery($this->request->query('query'))));
     }
 
+    public function action_clear_suppliers_items()
+    {
+        $this->response->body($this->crmModel->clearSuppliersItems((int)$this->request->post('supplierId')));
+    }
+
     public function action_search_spare_by_api()
     {
         $updateTask = $this->crmModel->searchSpareByApi($this->request->post('article'));

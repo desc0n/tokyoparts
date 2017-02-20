@@ -358,6 +358,17 @@ class Model_CRM extends Kohana_Model
     }
 
     /**
+     * @param int $supplierId
+     * @return string
+     */
+    public function clearSuppliersItems($supplierId)
+    {
+        DB::delete('suppliers__items')->where('supplier_id', '=', $supplierId)->execute();
+
+        return 'success';
+    }
+
+    /**
      * @return array
      */
     public function getOrderStatusesList()

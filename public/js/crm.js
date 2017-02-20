@@ -168,3 +168,4 @@ function writeSearchSpareByApiOfferResult(jsonData) {
 
     $('#searchModal').modal('toggle');
 }
+function clearSuppliersItems(supplierId) {$.ajax({url:'/ajax/clear_suppliers_items', type: 'POST', async: true, data:{supplierId:supplierId}}).done(function () {location.reload();});}
