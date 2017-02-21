@@ -206,3 +206,6 @@ body {
     cursor: pointer;
     color: #a94442;
 }
+.markup-form .control-label {
+    text-align: left;
+}

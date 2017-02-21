@@ -16,7 +16,7 @@
             <td><?=$supplier['name'];?></td>
             <td class="text-center"><?=$supplier['price_count'];?></td>
             <td class="text-center row">
-                <div class="col-lg-8">
+                <div class="col-lg-6">
                     <form role="form" method="post" enctype='multipart/form-data'>
                         <div class="row">
                             <div class="col-lg-6">
@@ -29,8 +29,11 @@
                         <input type="hidden" name="supplierId" value="<?=$supplier['id'];?>">
                     </form>
                 </div>
-                <div class="col-lg-4">
+                <div class="col-lg-3">
                     <button class="btn btn-danger" onclick="clearSuppliersItems(<?=$supplier['id'];?>);">Очистить прайс</button>
+                </div>
+                <div class="col-lg-3">
+                    <a class="btn btn-primary" href="/crm/supplier_markup/<?=$supplier['id'];?>">Изменить наценки</a>
                 </div>
             </td>
         </tr>

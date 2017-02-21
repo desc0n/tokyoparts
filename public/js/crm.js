@@ -169,3 +169,4 @@ function writeSearchSpareByApiOfferResult(jsonData) {
     $('#searchModal').modal('toggle');
 }
 function clearSuppliersItems(supplierId) {$.ajax({url:'/ajax/clear_suppliers_items', type: 'POST', async: true, data:{supplierId:supplierId}}).done(function () {location.reload();});}
+function addSupplierMarkupRange(supplierId) {$.ajax({url:'/ajax/add_supplier_markup_range', type: 'POST', async: true, data:{supplierId:supplierId}}).done(function () {location.reload();});}

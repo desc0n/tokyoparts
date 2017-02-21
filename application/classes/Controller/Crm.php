@@ -220,4 +220,19 @@ class Controller_Crm extends Controller
 
         $this->response->body($template);
     }
+
+    public function action_supplier_markup()
+    {
+        if ((int)$this->request->post('redactMarkup') === 1) {
+            $this->crmModel->setSupplierMarkups($this->request->param('id'), $this->request->post());
+        }
+
+        $content = View::factory('crm/supplier_markup')
+            ->set('supplier', $this->crmModel->findSupplierById($this->request->param('id')))
+            ->set('supplierMarkup', $this->crmModel->getSupplierMarkup($this->request->param('id')))
+            ->set('supplierMarkupRanges', $this->crmModel->findSupplierMarkupRangesBySupplier($this->request->param('id')))
+        ;
+
+        $this->response->body(View::factory('crm/template')->set('content', $content));
+    }
 }

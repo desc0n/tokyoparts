@@ -72,4 +72,9 @@ class Controller_Ajax extends Controller
         $updateTask = $this->crmModel->searchSpareByApi($this->request->post('article'));
         $this->response->body(json_encode($updateTask === null ? [] : $this->crmModel->findSupplierItemByUpdateTask($updateTask)));
     }
+
+    public function action_add_supplier_markup_range()
+    {
+        $this->response->body($this->crmModel->addSupplierMarkupRanges($this->request->post('supplierId')));
+    }
 }

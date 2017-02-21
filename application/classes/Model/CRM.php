@@ -249,6 +249,21 @@ class Model_CRM extends Kohana_Model
     }
 
     /**
+     * @param $supplierId
+     * @return false|array
+     */
+    public function findSupplierById($supplierId)
+    {
+        return DB::select()
+            ->from('suppliers__suppliers')
+            ->where('id', '=', $supplierId)
+            ->limit(1)
+            ->execute()
+            ->current()
+        ;
+    }
+
+    /**
      * @param $name
      */
     public function addSupplier($name)
@@ -1064,10 +1079,145 @@ class Model_CRM extends Kohana_Model
         return $updateTask;
     }
 
+    /**
+     * @return string
+     */
     private function generateUpdateTask()
     {
         $now = new DateTime();
         return $now->format('YmdHis');
+    }
+
+    /**
+     * @param $supplierId
+     * @return false|array
+     */
+    public function getSupplierMarkup($supplierId)
+    {
+        return DB::select()
+            ->from('suppliers__markups')
+            ->limit(1)
+            ->where('supplier_id', '=', $supplierId)
+            ->execute()
+            ->current()
+        ;
+    }
+
+    /**
+     * @param int $supplierId
+     * @param array $post
+     */
+    public function setSupplierMarkups($supplierId, $post)
+    {
+        $this->setSupplierMarkup($supplierId, (float)Arr::get($post, 'markup', 0));
+
+        foreach (Arr::get($post, 'markup_range_id', []) as $key => $value) {
+            $this->setSupplierMarkupRanges((int)$value, (int)$post['markup_range_first'][$key], (int)$post['markup_range_last'][$key], (float)$post['markup_range_value'][$key]);
+        }
+    }
+
+    /**
+     * @param int $supplierId
+     * @param float $markup
+     */
+    private function setSupplierMarkup($supplierId, $markup)
+    {
+        if (!$this->getSupplierMarkup($supplierId)) {
+            DB::insert('suppliers__markups', ['supplier_id', 'markup', 'updated_at'])
+                ->values([$supplierId, $markup, DB::expr('NOW()')])
+                ->execute()
+            ;
+
+            return;
+        }
+
+        DB::update('suppliers__markups')
+            ->set([
+                'markup' => $markup,
+                'updated_at' => DB::expr('NOW()')
+            ])
+            ->execute()
+        ;
+    }
+
+    /**
+     * @param int $id
+     * @return false|array
+     */
+    public function findSupplierMarkupRangesById($id)
+    {
+        return DB::select()
+            ->from('suppliers__markups_ranges')
+            ->where('id', '=', $id)
+            ->limit(1)
+            ->execute()
+            ->current()
+        ;
+    }
+
+    /**
+     * @param $supplierId
+     * @return array
+     */
+    public function findSupplierMarkupRangesBySupplier($supplierId)
+    {
+        return DB::select()
+            ->from('suppliers__markups_ranges')
+            ->where('supplier_id', '=', $supplierId)
+            ->execute()
+            ->as_array()
+        ;
+    }
+
+    /**
+     * @param int $supplierId
+     * @param int $rangeFirst
+     * @param int $rangeLast
+     * @param int $price
+     * @return false|array
+     */
+    public function findSupplierMarkupRangesBySupplierAndRanges($supplierId, $rangeFirst, $rangeLast, $price)
+    {
+        return DB::select()
+            ->from('suppliers__markups_ranges')
+            ->where('supplier_id', '=', $supplierId)
+            ->and_where('range_first', '<', $price)
+            ->and_where('range_last', '>=', $price)
+            ->limit(1)
+            ->execute()
+            ->current()
+        ;
+    }
+
+    /**
+     * @param int $supplierId
+     */
+    public function addSupplierMarkupRanges($supplierId)
+    {
+        DB::insert('suppliers__markups_ranges', ['supplier_id', 'updated_at'])
+            ->values([$supplierId, DB::expr('NOW()')])
+            ->execute()
+        ;
+    }
+
+    /**
+     * @param int $markupRangeId
+     * @param int $rangeFirst
+     * @param int $rangeLast
+     * @param int $value
+     */
+    public function setSupplierMarkupRanges($markupRangeId, $rangeFirst, $rangeLast, $value)
+    {
+        DB::update('suppliers__markups_ranges')
+            ->set([
+                'range_first' => $rangeFirst,
+                'range_last' => $rangeLast,
+                'value' => $value,
+                'updated_at' => DB::expr('NOW()')
+            ])
+            ->where('id', '=', $markupRangeId)
+            ->execute()
+        ;
     }
 }
 ?>
