@@ -22,7 +22,8 @@
                 <th>Бренд</th>
                 <th>Артикул</th>
                 <th>Название</th>
-                <th>Цена</th>
+                <th>Цена закуп.</th>
+                <th>Цена прод.</th>
                 <th>Наличие</th>
                 <th class="text-center">Действия</th>
             </tr>
@@ -35,6 +36,7 @@
                     <td class="item-article"><?=$item['article'];?></td>
                     <td><?=$item['name'];?></td>
                     <td><?=$item['price'];?></td>
+                    <td><?=$item['offer_price'];?></td>
                     <td><?=$item['quantity'];?></td>
                     <td class="text-center">
                         <button class="btn btn-default" onclick="addSpareToOrderFromSearch(<?=$item['id'];?>)" title="Добавить в заказ">
@@ -46,7 +48,7 @@
                     </td>
                 </tr>
             <?}?>
-            <tr id="searchSpareByApiPreview"><td colspan="7"></td></tr>
+            <tr id="searchSpareByApiPreview"><td colspan="8"></td></tr>
             </tbody>
         </table>
     </div>

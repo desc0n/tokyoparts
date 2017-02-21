@@ -422,7 +422,7 @@ class Model_CRM extends Kohana_Model
 
         $updateTask = $this->searchSpareByApi($article);
 
-        return DB::select('si.*', ['ss.name', 'supplier_name'])
+        $searchResult = DB::select('si.*', ['ss.name', 'supplier_name'])
             ->from(['suppliers__items', 'si'])
             ->join(['suppliers__suppliers', 'ss'])
                 ->on('ss.id', '=', 'si.supplier_id')
@@ -435,6 +435,12 @@ class Model_CRM extends Kohana_Model
             ->execute()
             ->as_array()
         ;
+
+        foreach ($searchResult as $i => $result) {
+            $searchResult[$i]['offer_price'] = $this->calculateMarkupPrice((int)$result['supplier_id'], (float)$result['price']);
+        }
+
+        return $searchResult;
     }
 
     /**
@@ -1171,12 +1177,10 @@ class Model_CRM extends Kohana_Model
 
     /**
      * @param int $supplierId
-     * @param int $rangeFirst
-     * @param int $rangeLast
      * @param int $price
      * @return false|array
      */
-    public function findSupplierMarkupRangesBySupplierAndRanges($supplierId, $rangeFirst, $rangeLast, $price)
+    public function findSupplierMarkupRangesBySupplierAndRanges($supplierId, $price)
     {
         return DB::select()
             ->from('suppliers__markups_ranges')
@@ -1218,6 +1222,20 @@ class Model_CRM extends Kohana_Model
             ->where('id', '=', $markupRangeId)
             ->execute()
         ;
+    }
+
+    /**
+     * @param int $supplierId
+     * @param float $price
+     * @return float
+     */
+    public function calculateMarkupPrice($supplierId, $price)
+    {
+        $supplierMarkup = $this->getSupplierMarkup($supplierId);
+        $price = $price * (1 + (Arr::get($supplierMarkup, 'markup', 0) / 100));
+        $supplierMarkupRangeValue = $this->findSupplierMarkupRangesBySupplierAndRanges($supplierId, $price);
+
+        return $price * (1 + (Arr::get($supplierMarkupRangeValue, 'value', 0) / 100));
     }
 }
 ?>
