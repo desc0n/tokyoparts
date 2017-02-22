@@ -90,6 +90,6 @@
 <script src="/public/js/moment-with-locales.js"></script>
 <script src="/public/js/bootstrap-datetimepicker.js"></script>
 <script src="/public/js/bootstrap3-typeahead.js"></script>
-<script src="/public/js/crm.js?v=10"></script>
+<script src="/public/js/crm.js?v=11"></script>
 </body>
 </html>

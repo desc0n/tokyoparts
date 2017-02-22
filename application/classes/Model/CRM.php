@@ -605,7 +605,7 @@ class Model_CRM extends Kohana_Model
             'article' => $itemData['article'],
             'name' => $itemData['name'],
             'start_price' => $itemData['price'],
-            'offer_price' => $spareData['offer_price'],
+            'offer_price' => $this->calculateMarkupPrice((int)$itemData['supplier_id'], $itemData['price']),
             'quantity' => $spareData['quantity']
         ];
 
@@ -785,7 +785,7 @@ class Model_CRM extends Kohana_Model
             '',
             $itemData['article'],
             (int)$itemData['price'],
-            0
+            $this->calculateMarkupPrice((int)$itemData['supplier_id'], (int)$itemData['price'])
         );
 
         return 'success';

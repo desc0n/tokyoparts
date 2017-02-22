@@ -59,6 +59,9 @@ function writeSearchOrderSpareOfferResult(id, jsonData) {
                     data[i].price +
                 '</td>' +
                 '<td>' +
+                    data[i].offer_price +
+                '</td>' +
+                '<td>' +
                     data[i].quantity +
                 '</td>' +
                 '<td class="text-center">' +
