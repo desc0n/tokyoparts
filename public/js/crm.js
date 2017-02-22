@@ -19,6 +19,7 @@ $(document).ready(function () {
     $('#lastDate').datetimepicker({locale: 'ru',format: 'DD.MM.YYYY'});
     $('.orders-list-table .action-ceil').on('click', function () {document.location='/crm/order/' + $(this).parent('tr').data('order-id');});
     if ($('#searchSpareByApiPreview').length && $('#searchOfferForm input[type=text][name=article]').val() != '') {searchSpareByApi($('#searchOfferForm input[type=text][name=article]').val());}
+    $('#showOfferPriceFlag').on('change', function () {if($(this).prop('checked')){$('th.hidden-start-price').css('display', 'table-cell');$('td.hidden-start-price').css('display', 'table-cell');$('span.hidden-start-price').css('display', 'block');}else{$('.hidden-start-price').css('display', 'none');}});
 });
 function getOrderId() {return $('#orderId').val();}
 function addNeedPart() {

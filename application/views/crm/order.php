@@ -66,6 +66,12 @@ $amount = (int)$order['delivery_price'];
                         <textarea class="form-control" name="comment" id="inputComment" placeholder="Комментарий" rows="3"><?=$order['comment'];?></textarea>
                     </div>
                 </div>
+                <div class="form-group">
+                    <label for="showOfferPriceFlag" class="col-lg-3 control-label">Вывести цену</label>
+                    <div class="col-lg-9 checkbox">
+                        <input type="checkbox" id="showOfferPriceFlag">
+                    </div>
+                </div>
             </div>
         </div>
         <div class="col-lg-1">
@@ -198,7 +204,7 @@ $amount = (int)$order['delivery_price'];
                             </div>
                         </td>
                         <td class="text-center">
-                            <?=$spare['start_price'];?>
+                            <span class="hidden-start-price"><?=$spare['start_price'];?></span>
                             <input type="hidden" name="start_price[]" value="<?=$spare['start_price'];?>">
                         </td>
                         <td>

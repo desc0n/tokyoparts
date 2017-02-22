@@ -209,3 +209,9 @@ body {
 .markup-form .control-label {
     text-align: left;
 }
+.search-items-page .checkbox label {
+    font-size: 14px!important;
+}
+.hidden-start-price {
+    display: none;
+}

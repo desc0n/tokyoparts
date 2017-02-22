@@ -8,7 +8,7 @@
   <link href="/public/css/bootstrap.css" rel="stylesheet">
   <link href="/public/css/bootstrap-datetimepicker.css" rel="stylesheet">
   <link href="/public/css/font-awesome.css" rel="stylesheet">
-  <link href="/public/css/crm.css?v=4" rel="stylesheet">
+  <link href="/public/css/crm.css?v=5" rel="stylesheet">
   <!-- HTML5 shim and Respond.js for IE8 support of HTML5 elements and media queries -->
   <!-- WARNING: Respond.js doesn't work if you view the page via file:// -->
   <!--[if lt IE 9]>

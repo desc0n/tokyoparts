@@ -1,6 +1,6 @@
 <div class="row search-items-page">
     <div class="col-lg-12 well form-group">
-        <form id="searchOfferForm">
+        <form id="searchOfferForm" class="col-lg-8">
             <div class="row">
                 <div class="col-lg-2">
                     <input type="text" class="form-control" name="order_id" id="orderId" value="<?=$orderId;?>" placeholder="№ заказа">
@@ -13,6 +13,13 @@
                 </div>
             </div>
         </form>
+        <div class="col-lg-4">
+            <div class="checkbox">
+                <label>
+                    <input type="checkbox" id="showOfferPriceFlag">Вывести цену
+                </label>
+            </div>
+        </div>
     </div>
     <div class="col-lg-12 form-group">
         <table class="table table-bordered search-spares-table">
@@ -22,7 +29,7 @@
                 <th>Бренд</th>
                 <th>Артикул</th>
                 <th>Название</th>
-                <th>Цена закуп.</th>
+                <th class="hidden-start-price">Цена закуп.</th>
                 <th>Цена прод.</th>
                 <th>Наличие</th>
                 <th class="text-center">Действия</th>
@@ -35,7 +42,7 @@
                     <td class="item-brand"><?=$item['brand'];?></td>
                     <td class="item-article"><?=$item['article'];?></td>
                     <td><?=$item['name'];?></td>
-                    <td><?=$item['price'];?></td>
+                    <td class="hidden-start-price"><?=$item['price'];?></td>
                     <td><?=$item['offer_price'];?></td>
                     <td><?=$item['quantity'];?></td>
                     <td class="text-center">
