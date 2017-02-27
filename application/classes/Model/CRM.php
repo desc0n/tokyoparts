@@ -1142,6 +1142,7 @@ class Model_CRM extends Kohana_Model
                 'markup' => $markup,
                 'updated_at' => DB::expr('NOW()')
             ])
+            ->where('supplier_id', '=', $supplierId)
             ->execute()
         ;
     }
