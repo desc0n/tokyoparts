@@ -36,7 +36,7 @@ function addNeedPart() {
 }
 function searchOrderSpareOffer(id, article) {$.ajax({url:'/ajax/search_order_spare_offer', type: 'POST', async: true, data: {article:article}}).done(function (data) {writeSearchOrderSpareOfferResult(id, data);});}
 function writeSearchOrderSpareOfferResult(id, jsonData) {
-    var data = JSON.parse(jsonData);
+    var data = JSON.parse($.trim(jsonData));
 
     $('#searchModalBody .search-spares-table tbody').html('');
 
@@ -82,7 +82,7 @@ function searchOrderSpare(orderId, itemId) {if(orderId == '') {alert('Не ук�
 function writeExchangeItem(itemId) {$('#exchangeItem').html($('#searchItemRow' + itemId + ' .item-brand').text() + ' / ' + $('#searchItemRow' + itemId + ' .item-article').text());}
 function writeOrderSpare(itemId, jsonData) {
     writeExchangeItem(itemId);
-    var data = JSON.parse(jsonData);
+    var data = JSON.parse($.trim(jsonData));
 
     $('#setSpareModalBody .set-spares-table tbody').html('');
 
@@ -130,7 +130,7 @@ function searchSpareByApi(article) {
     });
 }
 function writeSearchSpareByApiOfferResult(jsonData) {
-    var data = JSON.parse(jsonData);
+    var data = JSON.parse($.trim(jsonData));
 
     $('#searchSpareByApiPreview').remove();
 
