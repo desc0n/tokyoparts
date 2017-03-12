@@ -415,30 +415,40 @@ class Model_CRM extends Kohana_Model
      */
     public function searchOrderSpareOffer($article)
     {
+        $searchResult = [];
+        $spares = [];
         $article = $this->getSearchArticle($article);
 
         if (empty($article)) {
             return [];
         }
 
-        $updateTask = $this->searchSpareByApi($article);
+        $this->searchSpareByApi($article);
+        $oemCrosses = $this->findOemCrosses($article);
+        $crosses = $this->findCrossesByOemId(Arr::get($oemCrosses, 'id'));
 
-        $searchResult = DB::select('si.*', ['ss.name', 'supplier_name'])
-            ->from(['suppliers__items', 'si'])
-            ->join(['suppliers__suppliers', 'ss'])
+        foreach ($crosses as $cross) {
+            $items = DB::select('si.*', ['ss.name', 'supplier_name'])
+                ->from(['suppliers__items', 'si'])
+                ->join(['suppliers__suppliers', 'ss'])
                 ->on('ss.id', '=', 'si.supplier_id')
-            ->where('si.quantity', '!=', 0)
-            ->and_where('si.article_search', '=', $article)
-            ->or_where_open()
-                ->where('si.update_task', '=', $updateTask)
-                ->and_where('si.update_task', 'IS NOT', null)
-            ->or_where_close()
-            ->execute()
-            ->as_array()
-        ;
+                ->where('si.quantity', '!=', 0)
+                ->and_where('si.article_search', '=', $cross['article'])
+                ->and_where('si.brand', '=', $cross['brand'])
+                ->execute()
+                ->as_array()
+            ;
 
-        foreach ($searchResult as $i => $result) {
+            foreach ($items as $item) {
+                $spares[md5($item['supplier_id'].$item['brand'].$item['article'])] = $item;
+            }
+        }
+
+        $i = 0;
+        foreach ($spares as $result) {
+            $searchResult[$i] = $result;
             $searchResult[$i]['offer_price'] = $this->calculateMarkupPrice((int)$result['supplier_id'], (float)$result['price']);
+            $i++;
         }
 
         return $searchResult;
@@ -1039,6 +1049,10 @@ class Model_CRM extends Kohana_Model
             }
         }
 
+        if (count($apiData)) {
+            $this->addCrosses(mb_strtoupper($article), $apiData, 'api');
+        }
+
         return $this->loadSupplierPriceFromApi($apiData);
     }
 
@@ -1238,6 +1252,125 @@ class Model_CRM extends Kohana_Model
         $supplierMarkupRangeValue = $this->findSupplierMarkupRangesBySupplierAndRanges($supplierId, $price);
 
         return $price * (1 + (Arr::get($supplierMarkupRangeValue, 'value', 0) / 100));
+    }
+
+
+    /**
+     * @param string $oem
+     * @param array $newCrosses
+     * @param string $source
+     */
+    private function addCrosses($oem, $newCrosses, $source)
+    {
+        $issetCrosses = [];
+        $crosses = [];
+        $oemCrossesId = $this->addOemCrosses($oem, $source);
+
+        foreach ($this->findCrossesByOemId($oemCrossesId) as $cross) {
+            if (!in_array(['brand' => $cross['brand'], 'article' => $cross['article']], $issetCrosses)) {
+                $issetCrosses[] = ['brand' => $cross['brand'], 'article' => $cross['article']];
+            }
+        }
+
+        foreach ($newCrosses as $suppliersList) {
+            foreach ($suppliersList as $supplierCrossesData) {
+                foreach ($supplierCrossesData as $newCross) {
+                    if (
+                        !in_array(['brand' => $newCross['brand'], 'article' => $newCross['article']], $issetCrosses)
+                        && !in_array(['brand' => $newCross['brand'], 'article' => $newCross['article']], $crosses)
+                    ) {
+                        $this->addCross($oemCrossesId, mb_strtoupper($newCross['brand']), mb_strtoupper($newCross['article']));
+                        $crosses[] = ['brand' => $newCross['brand'], 'article' => $newCross['article']];
+                    }
+                }
+            }
+        }
+    }
+
+    /**
+     * @param $oem
+     * @return array|bool
+     */
+    public function findOemCrosses($oem)
+    {
+        return DB::select()
+            ->from('crosses__oem')
+            ->where('oem', 'LIKE', $oem)
+            ->limit(1)
+            ->execute()
+            ->current()
+            ;
+    }
+
+    /**
+     * @param string $oem
+     * @param string $source
+     *
+     * @return int
+     */
+    private function addOemCrosses($oem, $source)
+    {
+        $oemCrosses = $this->findOemCrosses($oem);
+
+        if(!$oemCrosses) {
+            $res = DB::insert('crosses__oem', ['oem', 'source', 'created_at'])
+                ->values([$oem, $source, DB::expr('NOW()')])
+                ->execute()
+            ;
+
+            return (int)$res[0];
+        }
+
+        return (int)Arr::get($oemCrosses,'id');
+    }
+
+    /**
+     * @param int $oemCrossesId
+     * @param string $brand
+     * @param string $article
+     */
+    private function addCross($oemCrossesId, $brand, $article)
+    {
+        $res = DB::insert('crosses__crosses', ['oem_crosses_id', 'brand', 'article'])
+            ->values([$oemCrossesId, $brand, preg_replace('/[^0-9a-zA-Z]+/', '', $article)])
+            ->execute()
+        ;
+    }
+
+    /**
+     * @param int $oemCrossesId
+     * @return array
+     */
+    private function findCrossesByOemId($oemCrossesId)
+    {
+        return DB::select()
+            ->from('crosses__crosses')
+            ->where('oem_crosses_id', '=', $oemCrossesId)
+            ->execute()
+            ->as_array()
+            ;
+    }
+
+    public function loadCrosses(array $fileData)
+    {
+        $data = file($fileData['crosses']['tmp_name']);
+        $loadCrosses = [];
+
+        foreach ($data as $row) {
+            $ceils = explode(';', $row);
+
+            if (!empty($ceils[0]) && !empty($ceils[1]) && !empty($ceils[2])) {
+                if (!isset($loadCrosses[$ceils[0]][0][0])) {
+                    $loadCrosses[$ceils[0]][0][0] = [];
+                }
+
+                $loadCrosses[$ceils[0]][0][0][] = ['brand' => $ceils[1], 'article' => $ceils[2]];
+            }
+        }
+
+        foreach ($loadCrosses as $oem => $newCrosses) {
+            $this->addCrosses($oem, $newCrosses, $fileData['crosses']['name']);
+        }
     }
 }
 ?>

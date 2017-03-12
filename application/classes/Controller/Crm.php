@@ -235,4 +235,20 @@ class Controller_Crm extends Controller
 
         $this->response->body(View::factory('crm/template')->set('content', $content));
     }
+
+    public function action_crosses()
+    {
+        $filename=Arr::get($_FILES, 'crosses', []);
+
+        if (!empty($filename)) {
+            $this->crmModel->loadCrosses($_FILES);
+
+            HTTP::redirect($this->request->referrer());
+        }
+
+        $content = View::factory('crm/crosses')
+        ;
+
+        $this->response->body(View::factory('crm/template')->set('content', $content));
+    }
 }
