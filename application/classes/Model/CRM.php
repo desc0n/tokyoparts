@@ -423,6 +423,20 @@ class Model_CRM extends Kohana_Model
             return [];
         }
 
+        $items = DB::select('si.*', ['ss.name', 'supplier_name'])
+            ->from(['suppliers__items', 'si'])
+            ->join(['suppliers__suppliers', 'ss'])
+            ->on('ss.id', '=', 'si.supplier_id')
+            ->where('si.quantity', '!=', 0)
+            ->and_where('si.article_search', '=', $article)
+            ->execute()
+            ->as_array()
+        ;
+
+        foreach ($items as $item) {
+            $spares[md5($item['supplier_id'].$item['brand'].$item['article'])] = $item;
+        }
+
         $this->searchSpareByApi($article);
         $oemCrosses = $this->findOemCrosses($article);
         $crosses = $this->findCrossesByOemId(Arr::get($oemCrosses, 'id'));
