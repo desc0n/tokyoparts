@@ -1378,7 +1378,7 @@ class Model_CRM extends Kohana_Model
                     $loadCrosses[$ceils[0]][0][0] = [];
                 }
 
-                $loadCrosses[$ceils[0]][0][0][] = ['brand' => $ceils[1], 'article' => $ceils[2]];
+                $loadCrosses[$this->getSearchArticle($ceils[0])][0][0][] = ['brand' => $ceils[1], 'article' => $this->getSearchArticle($ceils[2])];
             }
         }
 
