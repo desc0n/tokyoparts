@@ -1372,13 +1372,18 @@ class Model_CRM extends Kohana_Model
 
         foreach ($data as $row) {
             $ceils = explode(';', $row);
-            $oem = $this->getSearchArticle($ceils[0]);
-            if (!empty($oem) && !empty($ceils[1]) && !empty($ceils[2])) {
-                if (!isset($loadCrosses[$oem][0][0])) {
-                    $loadCrosses[$oem][0][0] = [];
-                }
+            $oems = explode(',', $ceils[0]);
 
-                $loadCrosses[$oem][0][0][] = ['brand' => $ceils[1], 'article' => $this->getSearchArticle($ceils[2])];
+            foreach ($oems as $oem) {
+                $oem = $this->getSearchArticle($oem);
+
+                if (!empty($oem) && !empty($ceils[1]) && !empty($ceils[2])) {
+                    if (!isset($loadCrosses[$oem][0][0])) {
+                        $loadCrosses[$oem][0][0] = [];
+                    }
+
+                    $loadCrosses[$oem][0][0][] = ['brand' => $ceils[1], 'article' => $this->getSearchArticle($ceils[2])];
+                }
             }
         }
 
