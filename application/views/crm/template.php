@@ -57,6 +57,8 @@
                     <li><a href="/crm/search_orders"><i class="fa fa-search fa-fw"></i> Поиск заказов</a></li>
                     <li><a href="/crm/search_items"><i class="fa fa-wrench fa-fw"></i> Поиск запчастей</a></li>
                     <li><a href="/crm/crosses"><i class="fa fa-exchange fa-fw"></i> Работа с кроссами</a></li>
+                    <li><a href="/crm/items_images"><i class="fa fa-image fa-fw"></i> Изображения товара</a></li>
+                    <li><a href="/crm/items_usages"><i class="fa fa-car fa-fw"></i> Применимость товара</a></li>
                 </ul>
             </div>
             <!-- /.sidebar-collapse -->

@@ -2,3 +2,5 @@ application/config/*
 vendor/*
 application/logs/*
 public/prices/*
+public/ftp/*
+public/img/items/*

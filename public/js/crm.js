@@ -177,3 +177,5 @@ function writeSearchSpareByApiOfferResult(jsonData) {
 }
 function clearSuppliersItems(supplierId) {$.ajax({url:'/ajax/clear_suppliers_items', type: 'POST', async: true, data:{supplierId:supplierId}}).done(function () {location.reload();});}
 function addSupplierMarkupRange(supplierId) {$.ajax({url:'/ajax/add_supplier_markup_range', type: 'POST', async: true, data:{supplierId:supplierId}}).done(function () {location.reload();});}
+function deleteItemImage(id) {$.ajax({url:'/ajax/delete_item_image', type: 'POST', async: true, data:{id:id}}).done(function () {$('#imageRow' + id).remove();});}
+function deleteItemUsage(id) {$.ajax({url:'/ajax/delete_item_usage', type: 'POST', async: true, data:{id:id}}).done(function () {$('#usageRow' + id).remove();});}

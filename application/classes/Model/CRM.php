@@ -5,6 +5,8 @@
  */
 class Model_CRM extends Kohana_Model
 {
+    public $defaultLimit = 20;
+
     public $orderSatusesColor = [
             1 => 'alert-danger',
             2 => 'alert-warning',
@@ -1390,6 +1392,382 @@ class Model_CRM extends Kohana_Model
         foreach ($loadCrosses as $oem => $newCrosses) {
             $this->addCrosses($oem, $newCrosses, $fileData['crosses']['name']);
         }
+    }
+
+
+    public function exportPriceToFarpost()
+    {
+        $file = fopen('public/ftp/farpost/price.csv', 'w');
+        $res = DB::select(
+            'si.*',
+            [
+                DB::select(DB::expr("GROUP_CONCAT(cc.article SEPARATOR ', ')"))
+                    ->from(['crosses__crosses', 'cc'])
+                    ->join(['crosses__oem', 'co'])
+                    ->on('co.id', '=', 'cc.oem_crosses_id')
+                    ->where('co.oem', '=', DB::expr('si.article_search'))
+                    ->and_where('cc.article', '!=', DB::expr('si.article_search'))
+                    ->and_where('cc.article', '!=', DB::expr('si.article')),
+                'crosses'
+            ],
+            [
+                DB::select(DB::expr("GROUP_CONCAT(iu.car SEPARATOR ', ')"))
+                    ->from(['items__usages', 'iu'])
+                    ->where('iu.brand', '=', DB::expr('si.brand'))
+                    ->and_where('iu.article', '=', DB::expr('si.article')),
+                'usages'
+            ],
+            [
+                DB::select(DB::expr("CONCAT_WS(', ', GROUP_CONCAT(ii.local_src SEPARATOR ', '), GROUP_CONCAT(ii.outer_link SEPARATOR ', '))"))
+                    ->from(['items__images', 'ii'])
+                    ->where('ii.brand', '=', DB::expr('si.brand'))
+                    ->and_where('ii.article', '=', DB::expr('si.article')),
+                'images'
+            ]
+        )
+            ->from(['suppliers__items', 'si'])
+            ->where('si.price', '!=', 0)
+            ->and_where('si.quantity', '!=', 0)
+            ->execute()
+            ->as_array()
+        ;
+
+        foreach ($res as $row) {
+            $line = sprintf(
+                '%s;%s;%s;%s;%s;%s;%s;%s;%s;' . chr(10),
+                $row['brand'],
+                $row['article_search'],
+                $row['name'] . ' ' . $row['article'],
+                $this->calculateMarkupPrice($row['supplier_id'], $row['price']),
+                $row['article'],
+                $row['usages'],
+                $row['crosses'],
+                $row['images'],
+                (empty($row['delivery_days']) ? $row['quantity'] : 'Под заказ доставка в течение ' . $row['delivery_days'] . ' дн.')
+            );
+            fwrite($file, mb_convert_encoding($line, 'CP-1251'));
+        }
+
+        fclose($file);
+    }
+
+    /**
+     * @param string $brand
+     * @param string $article
+     * @param array $files
+     * @param string $outerLink
+     * @param string $localSrc
+     */
+    public function loadImage($brand, $article, $files = [], $outerLink, $localSrc = null)
+    {
+        if (empty($brand) || empty($article)) {
+            return;
+        }
+
+        if (empty($files) && empty($localSrc) && empty($outerLink)) {
+            return;
+        }
+
+        $itemImageId = null;
+        $itemsImages = $this->findItemImages($brand, $article);
+
+        if (count($itemsImages) === 0) {
+            $this->insertNewItemImage($brand, $article, $files, $outerLink, $localSrc);
+
+            return;
+        }
+
+        $issetImages = [];
+
+        foreach ($itemsImages as $itemsImage) {
+            $issetImages[] = [$itemsImage['local_src'], $itemsImage['outer_link']];
+        }
+
+        foreach ($itemsImages as $itemsImage) {
+            if (($itemsImage['local_src'] !== null && $itemsImage['local_src'] === $localSrc) || ($itemsImage['outer_link'] !== null && $itemsImage['outer_link'] === $outerLink)){
+                if ($itemsImage['local_src'] === null && $localSrc !== null) {
+                    DB::update('items__images')
+                        ->set(['local_src' => $localSrc])
+                        ->where('id', '=', $itemsImage['id'])
+                        ->execute()
+                    ;
+                }
+
+                if ($itemsImage['outer_link'] === null && $outerLink !== null) {
+                    DB::update('items__images')
+                        ->set(['outer_link' => $outerLink])
+                        ->where('id', '=', $itemsImage['id'])
+                        ->execute()
+                    ;
+                }
+
+                continue;
+            }
+
+            if (!in_array([$localSrc, $outerLink], $issetImages)) {
+                $this->insertNewItemImage($brand, $article, $files, $outerLink, $localSrc);
+                $issetImages[] = [$localSrc, $outerLink];
+            }
+        }
+    }
+
+    /**
+     * @param string $brand
+     * @param string $article
+     * @param array $files
+     * @param string $outerLink
+     * @param string $localSrc
+     */
+    private function insertNewItemImage($brand, $article, $files, $outerLink, $localSrc)
+    {
+        $result = DB::insert('items__images', ['brand', 'article'])
+            ->values([$brand, $article])
+            ->execute();
+
+        $itemImageId = $result[0];
+
+        if (!empty($files)) {
+            $type = mb_strrchr ($files['images']['name'], '.', false);
+            $fileName = 'public/img/items/' . $brand . '&' . $article . $type;
+
+            if (copy($files['images']['tmp_name'], $fileName)) {
+                DB::update('items__images')
+                    ->set(['local_src' => 'http://' . $_SERVER['HTTP_HOST'] . '/' . $fileName])
+                    ->where('id', '=', $itemImageId)
+                    ->execute()
+                ;
+            }
+        }
+
+        if (!empty($localSrc)) {
+            DB::update('items__images')
+                ->set(['local_src' => $localSrc])
+                ->where('id', '=', $itemImageId)
+                ->execute()
+            ;
+        }
+
+        if (!empty($outerLink)) {
+            DB::update('items__images')
+                ->set(['outer_link' => $outerLink])
+                ->where('id', '=', $itemImageId)
+                ->execute()
+            ;
+        }
+    }
+
+    /**
+     * @param string $brand
+     * @param string $article
+     * @return array
+     */
+    public function findItemImages($brand, $article)
+    {
+        return DB::select()
+            ->from('items__images')
+            ->where('brand', '=', $brand)
+            ->and_where('article', '=', $article)
+            ->execute()
+            ->as_array()
+            ;
+    }
+
+    /**
+     * @param int $offset
+     * @param int $limit
+     * @param string $brand
+     * @param string $article
+     *
+     * @return array
+     */
+    public function getAllItemsImages($offset, $limit, $brand, $article)
+    {
+        $query = DB::select()->from('items__images');
+
+        $query = !empty($brand) ? $query->where('brand', '=', $brand) : $query;
+        $query = !empty($article) ? $query->where('article', '=', $article) : $query;
+        $query = !empty($limit) ? $query->limit($limit) : $query;
+        $query = !empty($offset) ? $query->offset($offset) : $query;
+
+        return $query
+            ->execute()
+            ->as_array()
+            ;
+    }
+
+    /**
+     * @param int $id
+     */
+    public function deleteItemImage($id)
+    {
+        DB::delete('items__images')
+            ->where('id', '=', $id)
+            ->execute()
+        ;
+    }
+
+    /**
+     * @param array $fileData
+     */
+    public function loadImagesPackage(array $fileData)
+    {
+        $data = file($fileData['tmp_name']);
+
+        foreach ($data as $row) {
+            $cells = explode(';', str_replace("\n", '', str_replace('"', '', $row)));
+
+            $brand = Arr::get($cells, 0);
+            $article = $this->getSearchArticle(Arr::get($cells, 1));
+            $localSources = explode(',', Arr::get($cells, 2, ''));
+            $outerLinks = explode(',', Arr::get($cells, 3, ''));
+
+            foreach ($localSources as $localSrc) {
+                $this->loadImage($brand, $article, [], null, $localSrc);
+            }
+
+            foreach ($outerLinks as $outerLink) {
+                $this->loadImage($brand, $article, [], $outerLink);
+            }
+        }
+    }
+
+    /**
+     * @param string $brand
+     * @param string $article
+     * @param string $car
+     */
+    public function loadUsage($brand, $article, $car = null)
+    {
+        if (empty($brand) || empty($article) || empty($car)) {
+            return;
+        }
+
+        $itemUsageId = null;
+        $itemsUsages = $this->findItemUsages($brand, $article);
+
+        if (count($itemsUsages) === 0) {
+            $this->insertNewItemUsage($brand, $article, $car);
+
+            return;
+        }
+
+        $issetCars = [];
+
+        foreach ($itemsUsages as $itemsUsage) {
+            $issetCars[] = $itemsUsage['car'];
+        }
+
+        foreach ($itemsUsages as $itemsUsage) {
+            if ($itemsUsage['car'] !== null && $itemsUsage['car'] === $car){
+                if ($itemsUsage['car'] === null && $car !== null) {
+                    DB::update('items__usages')
+                        ->set(['car' => $car])
+                        ->where('id', '=', $itemsUsage['id'])
+                        ->execute()
+                    ;
+                }
+
+                continue;
+            }
+
+            if (!in_array($car, $issetCars)) {
+                $this->insertNewItemUsage($brand, $article, $car);
+                $issetCars[$car] = $car;
+            }
+        }
+    }
+
+    /**
+     * @param string $brand
+     * @param string $article
+     * @return array
+     */
+    public function findItemUsages($brand, $article)
+    {
+        return DB::select()
+            ->from('items__usages')
+            ->where('brand', '=', $brand)
+            ->and_where('article', '=', $article)
+            ->execute()
+            ->as_array()
+            ;
+    }
+
+    /**
+     * @param string $brand
+     * @param string $article
+     * @param string $car
+     */
+    private function insertNewItemUsage($brand, $article, $car)
+    {
+        $result = DB::insert('items__usages', ['brand', 'article'])
+            ->values([$brand, $article])
+            ->execute();
+
+        $itemUsageId = $result[0];
+
+        if (!empty($car)) {
+            DB::update('items__usages')
+                ->set(['car' => $car])
+                ->where('id', '=', $itemUsageId)
+                ->execute()
+            ;
+        }
+    }
+
+    /**
+     * @param array $fileData
+     */
+    public function loadUsagesPackage(array $fileData)
+    {
+        $data = file($fileData['tmp_name']);
+
+        foreach ($data as $row) {
+            $cells = explode(';', $row);
+
+            $brand = Arr::get($cells, 0);
+            $article = $this->getSearchArticle(Arr::get($cells, 1));
+            $cars = explode(',', Arr::get($cells, 2, ''));
+
+            foreach ($cars as $car) {
+                $car = preg_replace('/[^[:print:]]\"/', '', trim($car, '\r\n'));
+                $this->loadUsage($brand, $article, $car);
+            }
+        }
+    }
+
+    /**
+     * @param int $offset
+     * @param int $limit
+     * @param string $brand
+     * @param string $article
+     *
+     * @return array
+     */
+    public function getAllItemsUsages($offset, $limit, $brand, $article)
+    {
+        $query = DB::select()->from('items__usages');
+
+        $query = !empty($brand) ? $query->where('brand', '=', $brand) : $query;
+        $query = !empty($article) ? $query->where('article', '=', $article) : $query;
+        $query = !empty($limit) ? $query->limit($limit) : $query;
+        $query = !empty($offset) ? $query->offset($offset) : $query;
+
+        return $query
+            ->execute()
+            ->as_array()
+            ;
+    }
+
+    /**
+     * @param int $id
+     */
+    public function deleteItemUsage($id)
+    {
+        DB::delete('items__usages')
+            ->where('id', '=', $id)
+            ->execute()
+        ;
     }
 }
 ?>

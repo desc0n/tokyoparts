@@ -77,4 +77,14 @@ class Controller_Ajax extends Controller
     {
         $this->response->body($this->crmModel->addSupplierMarkupRanges($this->request->post('supplierId')));
     }
+
+    public function action_delete_item_image()
+    {
+        $this->response->body($this->crmModel->deleteItemImage((int)$this->request->post('id')));
+    }
+
+    public function action_delete_item_usage()
+    {
+        $this->response->body($this->crmModel->deleteItemUsage((int)$this->request->post('id')));
+    }
 }

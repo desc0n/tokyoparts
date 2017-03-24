@@ -144,7 +144,13 @@ class Controller_Crm extends Controller
 	    if ((int)$this->request->post('addSupplier') === 1) {
 	        $this->crmModel->addSupplier($this->request->post('name'));
 
-            HTTP::redirect('crm/suppliers_list');
+            HTTP::redirect($this->request->referrer());
+        }
+
+        if ((int)$this->request->post('exportPriceToFarpost') === 1) {
+            $this->crmModel->exportPriceToFarpost();
+
+            HTTP::redirect($this->request->referrer());
         }
 
         $filename=Arr::get($_FILES, 'priceName', []);
@@ -152,7 +158,7 @@ class Controller_Crm extends Controller
         if (!empty($filename)) {
             $this->crmModel->loadSupplierPrice($_FILES, $this->request->post('supplierId'));
 
-            HTTP::redirect('crm/suppliers_list');
+            HTTP::redirect($this->request->referrer());
         }
 
         $content = View::factory('crm/suppliers_list')
@@ -247,6 +253,72 @@ class Controller_Crm extends Controller
         }
 
         $content = View::factory('crm/crosses')
+        ;
+
+        $this->response->body(View::factory('crm/template')->set('content', $content));
+    }
+
+
+
+    public function action_items_images()
+    {
+        if ((int)$this->request->post('loadImage') === 1) {
+            $this->crmModel->loadImage($this->request->post('brand'), $this->request->post('article'), $_FILES, $this->request->post('outer_link'));
+
+            HTTP::redirect($this->request->referrer());
+        }
+
+        if (!empty($_FILES['imagesPackage'])) {
+            $this->crmModel->loadImagesPackage($_FILES['imagesPackage']);
+
+            HTTP::redirect($this->request->referrer());
+        }
+
+        $content = View::factory('crm/items_images')
+            ->set('imagesList', $this->crmModel->getAllItemsImages(
+                ((Arr::get($_GET, 'page', 1) - 1) * $this->crmModel->defaultLimit),
+                Arr::get($_GET, 'limit', $this->crmModel->defaultLimit),
+                $this->request->query('brand'),
+                $this->request->query('article')
+            ))
+            ->set('imagesCount', count($this->crmModel->getAllItemsImages(
+                ((Arr::get($_GET, 'page', 1) - 1) * $this->crmModel->defaultLimit),
+                Arr::get($_GET, 'limit', $this->crmModel->defaultLimit),
+                $this->request->query('brand'),
+                $this->request->query('article')
+            )))
+            ->set('brand', $this->request->query('brand'))
+            ->set('article', $this->request->query('article'))
+            ->set('page', (int)Arr::get($_GET, 'page', 1))
+        ;
+
+        $this->response->body(View::factory('crm/template')->set('content', $content));
+    }
+
+    public function action_items_usages()
+    {
+        if (!empty($_FILES['usagesPackage'])) {
+            $this->crmModel->loadUsagesPackage($_FILES['usagesPackage']);
+
+            HTTP::redirect($this->request->referrer());
+        }
+
+        $content = View::factory('crm/items_usages')
+            ->set('usagesList', $this->crmModel->getAllItemsUsages(
+                ((Arr::get($_GET, 'page', 1) - 1) * $this->crmModel->defaultLimit),
+                (int)Arr::get($_GET, 'limit', $this->crmModel->defaultLimit),
+                $this->request->query('brand'),
+                $this->request->query('article')
+            ))
+            ->set('usagesCount', count($this->crmModel->getAllItemsUsages(
+                0,
+                0,
+                $this->request->query('brand'),
+                $this->request->query('article')
+            )))
+            ->set('brand', $this->request->query('brand'))
+            ->set('article', $this->request->query('article'))
+            ->set('page', (int)Arr::get($_GET, 'page', 1))
         ;
 
         $this->response->body(View::factory('crm/template')->set('content', $content));
