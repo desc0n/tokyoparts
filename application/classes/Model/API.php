@@ -28,7 +28,7 @@ class Model_API extends Kohana_Model
             'url' => 'http://vl.rossko.ru/service/v1/GetSearch?wsdl',
             'type' => 'get',
             'responseType' => 'soap',
-            'access_warehouse' => ['ОТ0000093']
+            'access_warehouse' => ['ОТ0000093', 'HST154']
         ]
     ];
 
@@ -171,16 +171,18 @@ class Model_API extends Kohana_Model
 
         if(!empty($responseData['result'])) {
             foreach ($responseData['result'] as $result) {
-                if (in_array(Arr::get($result, 'id'), $this->apiSettings['mxGroup']['access_warehouse'])) {
-                    $data[] = [
-                        'brand' => Arr::get($result, 'brand'),
-                        'article' => Arr::get($result, 'articul'),
-                        'name' => Arr::get($result, 'name'),
-                        'price' => Arr::get($result, 'discountprice', 0),
-                        'quantity' => Arr::get($result, 'count', 0),
-                        'vendor_id' => Arr::get($result, 'code')
-                    ];
+                if (!isset($data[Arr::get($result, 'id')])) {
+                    $data[Arr::get($result, 'id')] = [];
                 }
+
+                $data[Arr::get($result, 'id')][] = [
+                    'brand' => Arr::get($result, 'brand'),
+                    'article' => Arr::get($result, 'articul'),
+                    'name' => Arr::get($result, 'name'),
+                    'price' => Arr::get($result, 'discountprice', 0),
+                    'quantity' => Arr::get($result, 'count', 0),
+                    'vendor_id' => Arr::get($result, 'code')
+                ];
             }
         }
 
@@ -233,16 +235,18 @@ class Model_API extends Kohana_Model
     private function addSingleSpareToRosskoApiData(array $data, array $part)
     {
         if (!empty($part['StocksList']['Stock']['StockID'])) {
-            if (in_array($part['StocksList']['Stock']['StockID'], $this->apiSettings['rossko']['access_warehouse'])) {
-                $data[] = [
-                    'brand' => $part['Brand'],
-                    'article' => $part['PartNumber'],
-                    'name' => $part['Name'],
-                    'price' => $part['StocksList']['Stock']['Price'],
-                    'quantity' => $part['StocksList']['Stock']['Count'],
-                    'vendor_id' => $part['GUID'] . $part['StocksList']['Stock']['DeliveryTime'],
-                ];
+            if (!isset($data[$part['StocksList']['Stock']['StockID']])) {
+                $data[$part['StocksList']['Stock']['StockID']] = [];
             }
+
+            $data[$part['StocksList']['Stock']['StockID']][] = [
+                'brand' => $part['Brand'],
+                'article' => $part['PartNumber'],
+                'name' => $part['Name'],
+                'price' => $part['StocksList']['Stock']['Price'],
+                'quantity' => $part['StocksList']['Stock']['Count'],
+                'vendor_id' => $part['GUID'] . $part['StocksList']['Stock']['DeliveryTime'],
+            ];
         }
 
         return $data;
@@ -258,16 +262,18 @@ class Model_API extends Kohana_Model
         if (!empty($part['StocksList']['Stock'])) {
             foreach ($part['StocksList']['Stock'] as $item) {
                 if (!empty($item['StockID'])) {
-                    if (in_array($item['StockID'], $this->apiSettings['rossko']['access_warehouse'])) {
-                        $data[] = [
-                            'brand' => $part['Brand'],
-                            'article' => $part['PartNumber'],
-                            'name' => $part['Name'],
-                            'price' => $item['Price'],
-                            'quantity' => $item['Count'],
-                            'vendor_id' => $part['GUID'] . $item['DeliveryTime']
-                        ];
+                    if (!isset($data[$item['StockID']])) {
+                        $data[$item['StockID']] = [];
                     }
+
+                    $data[$item['StockID']][] = [
+                        'brand' => $part['Brand'],
+                        'article' => $part['PartNumber'],
+                        'name' => $part['Name'],
+                        'price' => $item['Price'],
+                        'quantity' => $item['Count'],
+                        'vendor_id' => $part['GUID'] . $item['DeliveryTime']
+                    ];
                 }
             }
         } else {
@@ -285,5 +291,13 @@ class Model_API extends Kohana_Model
         }
 
         return $data;
+    }
+
+    /**
+     * @return array
+     */
+    public function getApiSettings()
+    {
+        return $this->apiSettings;
     }
 }

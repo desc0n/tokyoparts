@@ -1078,6 +1078,9 @@ class Model_CRM extends Kohana_Model
      */
     public function loadSupplierPriceFromApi(array $apiData)
     {
+        /** @var Model_API $apiModel */
+        $apiModel = Model::factory('API');
+
         if (empty($apiData)) {
             return null;
         }
@@ -1086,25 +1089,34 @@ class Model_CRM extends Kohana_Model
         $loadPriceData = [];
 
         foreach ($apiData as $supplierApiData) {
-            foreach ($supplierApiData as $supplierId => $data) {
-                foreach ($data as $value) {
-                    $validData = $this->validateLoadPrice(
-                        $supplierId,
-                        $value['brand'],
-                        $value['article'],
-                        $value['name'],
-                        $value['price'],
-                        $value['quantity']
-                    );
+            foreach ($supplierApiData as $supplierId => $warehouseApiData) {
+                $supplierData = $this->findSupplierById($supplierId);
+                $apiSettings = Arr::get($apiModel->getApiSettings(), $supplierData['api_name'], []);
 
-                    if (empty($validData)) {
+                foreach ($warehouseApiData as $warehouseId => $data) {
+                    if (count($apiSettings) && !in_array($warehouseId, Arr::get($apiSettings, 'access_warehouse', []))) {
                         continue;
                     }
 
-                    array_push($validData, $value['vendor_id']);
-                    array_push($validData, $updateTask);
+                    foreach ($data as $value) {
+                        $validData = $this->validateLoadPrice(
+                            $supplierId,
+                            $value['brand'],
+                            $value['article'],
+                            $value['name'],
+                            $value['price'],
+                            $value['quantity']
+                        );
 
-                    $loadPriceData[] = $validData;
+                        if (empty($validData)) {
+                            continue;
+                        }
+
+                        array_push($validData, $value['vendor_id']);
+                        array_push($validData, $updateTask);
+
+                        $loadPriceData[] = $validData;
+                    }
                 }
             }
         }
@@ -1290,13 +1302,15 @@ class Model_CRM extends Kohana_Model
 
         foreach ($newCrosses as $suppliersList) {
             foreach ($suppliersList as $supplierCrossesData) {
-                foreach ($supplierCrossesData as $newCross) {
-                    if (
-                        !in_array(['brand' => $newCross['brand'], 'article' => $newCross['article']], $issetCrosses)
-                        && !in_array(['brand' => $newCross['brand'], 'article' => $newCross['article']], $crosses)
-                    ) {
-                        $this->addCross($oemCrossesId, mb_strtoupper($newCross['brand']), mb_strtoupper($newCross['article']));
-                        $crosses[] = ['brand' => $newCross['brand'], 'article' => $newCross['article']];
+                foreach ($supplierCrossesData as $warehouseId) {
+                    foreach ($warehouseId as $newCross) {
+                        if (
+                            !in_array(['brand' => $newCross['brand'], 'article' => $newCross['article']], $issetCrosses)
+                            && !in_array(['brand' => $newCross['brand'], 'article' => $newCross['article']], $crosses)
+                        ) {
+                            $this->addCross($oemCrossesId, mb_strtoupper($newCross['brand']), mb_strtoupper($newCross['article']));
+                            $crosses[] = ['brand' => $newCross['brand'], 'article' => $newCross['article']];
+                        }
                     }
                 }
             }
