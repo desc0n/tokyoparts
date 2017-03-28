@@ -1442,24 +1442,29 @@ class Model_CRM extends Kohana_Model
             ->from(['suppliers__items', 'si'])
             ->where('si.price', '!=', 0)
             ->and_where('si.quantity', '!=', 0)
+            ->group_by('si.supplier_id', 'si.brand')
             ->execute()
             ->as_array()
         ;
 
         foreach ($res as $row) {
+            if (empty($row['brand']) || empty($row['article_search'])) {
+                continue;
+            }
+
             $line = sprintf(
-                '%s;%s;%s;%s;%s;%s;%s;%s;%s;' . chr(10),
+                '%s;%s;%s;%s;%s;%s;%s;%s;%s;',
                 $row['brand'],
                 $row['article_search'],
                 $row['name'] . ' ' . $row['article'],
                 $this->calculateMarkupPrice($row['supplier_id'], $row['price']),
                 $row['article'],
-                $row['usages'],
+                trim($row['usages']),
                 $row['crosses'],
-                $row['images'],
+                trim($row['images']),
                 (empty($row['delivery_days']) ? $row['quantity'] : 'Под заказ доставка в течение ' . $row['delivery_days'] . ' дн.')
             );
-            fwrite($file, mb_convert_encoding($line, 'CP-1251'));
+            fwrite($file, mb_convert_encoding(str_replace(chr(10), '', $line) . chr(10), 'CP-1251'));
         }
 
         fclose($file);
