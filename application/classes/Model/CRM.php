@@ -279,7 +279,7 @@ class Model_CRM extends Kohana_Model
     public function loadSupplierPrice(array $fileData, $supplierId)
     {
         $data = file($fileData['priceName']['tmp_name']);
-        $updateTask = $this->generateUpdateTask();
+        $updateTask = $this->generateUpdateTask('file');
 
         foreach ($data as $row) {
             $ceils = explode(';', $row);
@@ -1085,7 +1085,7 @@ class Model_CRM extends Kohana_Model
             return null;
         }
 
-        $updateTask = $this->generateUpdateTask();
+        $updateTask = $this->generateUpdateTask('api');
         $loadPriceData = [];
 
         foreach ($apiData as $supplierApiData) {
@@ -1129,12 +1129,14 @@ class Model_CRM extends Kohana_Model
     }
 
     /**
+     * @param string $type
+     *
      * @return string
      */
-    private function generateUpdateTask()
+    private function generateUpdateTask($type)
     {
         $now = new DateTime();
-        return $now->format('YmdHis');
+        return $type . '.' . $now->format('YmdHis');
     }
 
     /**
