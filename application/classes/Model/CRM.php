@@ -1444,7 +1444,7 @@ class Model_CRM extends Kohana_Model
             ->from(['suppliers__items', 'si'])
             ->where('si.price', '!=', 0)
             ->and_where('si.quantity', '!=', 0)
-            ->group_by('si.supplier_id', 'si.brand')
+            ->order_by(['si.supplier_id', 'si.brand'])
             ->execute()
             ->as_array()
         ;
