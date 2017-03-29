@@ -1281,7 +1281,7 @@ class Model_CRM extends Kohana_Model
         $price = $price * (1 + (Arr::get($supplierMarkup, 'markup', 0) / 100));
         $supplierMarkupRangeValue = $this->findSupplierMarkupRangesBySupplierAndRanges($supplierId, $price);
 
-        return $price * (1 + (Arr::get($supplierMarkupRangeValue, 'value', 0) / 100));
+        return round($price * (1 + (Arr::get($supplierMarkupRangeValue, 'value', 0) / 100)));
     }
 
 
