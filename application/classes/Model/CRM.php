@@ -1461,9 +1461,9 @@ class Model_CRM extends Kohana_Model
                 $row['name'] . ' ' . $row['article'],
                 $this->calculateMarkupPrice($row['supplier_id'], $row['price']),
                 $row['article'],
-                trim($row['usages']),
+                str_replace('\\n','',trim($row['usages'])),
                 $row['crosses'],
-                trim($row['images']),
+                str_replace('\\n','',trim($row['images'])),
                 (empty($row['delivery_days']) ? $row['quantity'] : 'Под заказ доставка в течение ' . $row['delivery_days'] . ' дн.')
             );
             fwrite($file, mb_convert_encoding(str_replace(chr(10), '', $line) . chr(10), 'CP-1251'));
