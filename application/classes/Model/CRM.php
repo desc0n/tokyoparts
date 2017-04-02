@@ -1430,14 +1430,14 @@ class Model_CRM extends Kohana_Model
                 DB::select(DB::expr("GROUP_CONCAT(iu.car SEPARATOR ', ')"))
                     ->from(['items__usages', 'iu'])
                     ->where('iu.brand', '=', DB::expr('si.brand'))
-                    ->and_where('iu.article', '=', DB::expr('si.article')),
+                    ->and_where('iu.article', '=', DB::expr('si.article_search')),
                 'usages'
             ],
             [
                 DB::select(DB::expr("CONCAT_WS(', ', GROUP_CONCAT(ii.local_src SEPARATOR ', '), GROUP_CONCAT(ii.outer_link SEPARATOR ', '))"))
                     ->from(['items__images', 'ii'])
                     ->where('ii.brand', '=', DB::expr('si.brand'))
-                    ->and_where('ii.article', '=', DB::expr('si.article')),
+                    ->and_where('ii.article', '=', DB::expr('si.article_search')),
                 'images'
             ]
         )
@@ -1643,11 +1643,11 @@ class Model_CRM extends Kohana_Model
             $outerLinks = explode(',', Arr::get($cells, 3, ''));
 
             foreach ($localSources as $localSrc) {
-                $this->loadImage($brand, $article, [], null, $localSrc);
+                $this->loadImage($brand, $article, [], null, trim($localSrc));
             }
 
             foreach ($outerLinks as $outerLink) {
-                $this->loadImage($brand, $article, [], $outerLink);
+                $this->loadImage($brand, $article, [], trim($outerLink));
             }
         }
     }
