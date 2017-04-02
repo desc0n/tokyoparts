@@ -45,8 +45,46 @@ $crmModel = Model::factory('CRM');
     </div>
     <div class="col-lg-12 form-group">
         <ul class="pagination">
-            <?for ($i = 1; $i <= ceil($usagesCount / $crmModel->defaultLimit); $i++){?>
-            <li <?=($i === $page ? 'class="active"' : null);?>><a href="/crm/items_usages/?brand=<?=$brand;?>&article=<?=$article;?>&page=<?=$i;?>"><?=$i;?></a></li>
+            <?
+            /* Входные параметры */
+            $limitPage = ceil($usagesCount / $crmModel->defaultLimit);
+            $count_show_pages = 10;
+            $url = "/crm/items_usages/?brand=" . $brand . "&article=" . $article;
+            $url_page = "/crm/items_usages/?brand=" . $brand . "&article=" . $article . "&page=";
+
+            if ($limitPage > 1) { // Всё это только если количество страниц больше 1
+                /* Дальше идёт вычисление первой выводимой страницы и последней (чтобы текущая страница была где-то посредине, если это возможно, и чтобы общая сумма выводимых страниц была равна count_show_pages, либо меньше, если количество страниц недостаточно) */
+                $left = $page - 1;
+                $right = $limitPage - $page;
+
+                if ($left < floor($count_show_pages / 2)) {
+                    $start = 1;
+                } else {
+                    $start = $page - floor($count_show_pages / 2);
+                }
+
+                $end = $start + $count_show_pages - 1;
+
+                if ($end > $limitPage) {
+                    $start -= ($end - $limitPage);
+                    $end = $limitPage;
+                    if ($start < 1) $start = 1;
+                }
+                ?>
+                <!-- Дальше идёт вывод Pagination -->
+                <?if ($page != 1) { ?>
+                    <li><a href="<?=$url?>" title="Первая страница">&laquo;&laquo;</a></li>
+                    <li><a href="<?if ($page == 2) { ?><?=$url?><?} else { ?><?=$url_page.($page - 1)?><?}?>" title="Предыдущая страница">&laquo;</a></li>
+                <?}?>
+                <?for ($i = $start; $i <= $end; $i++) { ?>
+                    <li <?=($i === $page ? 'class="active"' : null);?>>
+                        <a href="<?php if ($i == 1) { ?><?=$url?><?} else { ?><?=$url_page.$i?><?}?>"><?=$i?></a>
+                    </li>
+                <?}?>
+                <?if ($page != $limitPage) { ?>
+                    <li><a href="<?=$url_page.($page + 1)?>" title="Следующая страница">&raquo;</a></li>
+                    <li><a href="<?=$url_page.$limitPage?>" title="Последняя страница">&raquo;&raquo;</a></li>
+                <?}?>
             <?}?>
         </ul>
     </div>

@@ -282,8 +282,8 @@ class Controller_Crm extends Controller
                 $this->request->query('article')
             ))
             ->set('imagesCount', count($this->crmModel->getAllItemsImages(
-                ((Arr::get($_GET, 'page', 1) - 1) * $this->crmModel->defaultLimit),
-                Arr::get($_GET, 'limit', $this->crmModel->defaultLimit),
+                0,
+                0,
                 $this->request->query('brand'),
                 $this->request->query('article')
             )))
