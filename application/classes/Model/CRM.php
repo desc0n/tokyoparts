@@ -1417,11 +1417,14 @@ class Model_CRM extends Kohana_Model
         }
     }
 
-
-    public function exportPriceToFarpost()
+    /**
+     * @param int $supplierId
+     *
+     * @return array
+     */
+    public function findSuppliersItemsForFarpost($supplierId)
     {
-        $file = fopen('public/ftp/farpost/price.csv', 'w');
-        $res = DB::select(
+        return DB::select(
             'si.*',
             [
                 DB::select(DB::expr("GROUP_CONCAT(cc.article SEPARATOR ', ')"))
@@ -1451,29 +1454,41 @@ class Model_CRM extends Kohana_Model
             ->from(['suppliers__items', 'si'])
             ->where('si.price', '!=', 0)
             ->and_where('si.quantity', '!=', 0)
+            ->and_where('si.brand', '!=', '')
+            ->and_where('si.article', '!=', '')
+            ->and_where('si.supplier_id', '=', $supplierId)
             ->order_by(['si.supplier_id', 'si.brand'])
             ->execute()
             ->as_array()
         ;
+    }
 
-        foreach ($res as $row) {
-            if (empty($row['brand']) || empty($row['article_search'])) {
-                continue;
+    public function exportPriceToFarpost()
+    {
+        $file = fopen('public/ftp/farpost/price.csv', 'w');
+
+        foreach ($this->getSuppliersList() as $supplierData) {
+            $supplierItems = $this->findSuppliersItemsForFarpost((int)$supplierData['id']);
+
+            foreach ($supplierItems as $key => $row) {
+                if (empty($row['brand']) || empty($row['article_search'])) {
+                    continue;
+                }
+
+                $line = sprintf(
+                    '%s;%s;%s;%s;%s;%s;%s;%s;%s;',
+                    $row['brand'],
+                    $row['article_search'],
+                    $row['name'] . ' ' . $row['article'],
+                    $this->calculateMarkupPrice($row['supplier_id'], $row['price']),
+                    $row['article'],
+                    str_replace('\\n','',trim($row['usages'])),
+                    $row['crosses'],
+                    str_replace('\\n','',trim($row['images'])),
+                    (empty($row['delivery_days']) ? $row['quantity'] : 'Под заказ доставка в течение ' . $row['delivery_days'] . ' дн.')
+                );
+                fwrite($file, mb_convert_encoding(str_replace(chr(10), '', $line) . chr(10), 'CP-1251'));
             }
-
-            $line = sprintf(
-                '%s;%s;%s;%s;%s;%s;%s;%s;%s;',
-                $row['brand'],
-                $row['article_search'],
-                $row['name'] . ' ' . $row['article'],
-                $this->calculateMarkupPrice($row['supplier_id'], $row['price']),
-                $row['article'],
-                str_replace('\\n','',trim($row['usages'])),
-                $row['crosses'],
-                str_replace('\\n','',trim($row['images'])),
-                (empty($row['delivery_days']) ? $row['quantity'] : 'Под заказ доставка в течение ' . $row['delivery_days'] . ' дн.')
-            );
-            fwrite($file, mb_convert_encoding(str_replace(chr(10), '', $line) . chr(10), 'CP-1251'));
         }
 
         fclose($file);
