@@ -243,7 +243,14 @@ class Model_CRM extends Kohana_Model
      */
     public function getSuppliersList()
     {
-        return DB::select('ss.*', [DB::select(DB::expr('COUNT(si.id)'))->from(['suppliers__items', 'si'])->where('si.supplier_id', '=', DB::expr('ss.id')), 'price_count'])
+        return DB::select('ss.*',
+            [
+                DB::select(DB::expr('COUNT(si.id)'))
+                    ->from(['suppliers__items', 'si'])
+                    ->where('si.supplier_id', '=', DB::expr('ss.id'))
+                    ->and_where('si.quantity', '!=', 0)
+                    ->and_where('si.price', '!=', 0),
+                'price_count'])
             ->from(['suppliers__suppliers', 'ss'])
             ->execute()
             ->as_array()
@@ -360,14 +367,14 @@ class Model_CRM extends Kohana_Model
         ];
 
         $value = Arr::get($replaceVariant, $value, $value);
-        $value = preg_replace( '/[^[:print:]]/', '',$value);
+        $value = preg_replace( '/[^[:print:]]/', '',(int)$value);
 
         return preg_replace('/[\D]+/', '', $value);
     }
 
     public function validatePrice($value)
     {
-        return preg_replace( '/[^[:print:]]/', '',$value);
+        return preg_replace( '/[^[:print:]]/', '',(int)$value);
     }
 
     public function getSearchArticle($article)
