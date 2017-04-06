@@ -263,7 +263,7 @@ class Controller_Crm extends Controller
     public function action_items_images()
     {
         if ((int)$this->request->post('loadImage') === 1) {
-            $this->crmModel->loadImage($this->request->post('brand'), $this->request->post('article'), $_FILES, $this->request->post('outer_link'));
+            $this->crmModel->loadImage($this->request->post('brand'), $this->crmModel->getSearchArticle($this->request->post('article')), $_FILES, $this->request->post('outer_link'));
 
             HTTP::redirect($this->request->referrer());
         }
