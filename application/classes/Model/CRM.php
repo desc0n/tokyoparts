@@ -1490,7 +1490,7 @@ class Model_CRM extends Kohana_Model
                 '%s;%s;%s;%s;%s;%s;%s;%s;%s;',
                 $row['brand'],
                 $row['article_search'],
-                str_replace(chr(10),'',str_replace('\\n','',trim($row['description']))),
+                str_replace(chr(10),'',str_replace('"','',trim($row['description']))),
                 $this->calculateMarkupPrice($row['supplier_id'], $row['price']),
                 $row['article'],
                 str_replace(chr(10),'',str_replace('\\n','',trim($row['usages']))),
