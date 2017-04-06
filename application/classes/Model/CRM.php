@@ -5,7 +5,7 @@
  */
 class Model_CRM extends Kohana_Model
 {
-    const FARPOST_UPLOAD_ITEM_LIMIT = 1500;
+    const FARPOST_UPLOAD_ITEM_LIMIT = 2000;
 
     public $defaultLimit = 20;
 
