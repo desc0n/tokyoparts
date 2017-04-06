@@ -5,7 +5,7 @@
  */
 class Model_CRM extends Kohana_Model
 {
-    const FARPOST_UPLOAD_ITEM_LIMIT = 2000;
+    const FARPOST_UPLOAD_ITEM_LIMIT = 2500;
 
     public $defaultLimit = 20;
 
@@ -1494,7 +1494,7 @@ class Model_CRM extends Kohana_Model
                 $this->calculateMarkupPrice($row['supplier_id'], $row['price']),
                 $row['article'],
                 str_replace(chr(10),'',str_replace('\\n','',trim($row['usages']))),
-                $row['crosses'],
+                str_replace(chr(10),'',str_replace('\\n','',$row['crosses'])),
                 str_replace(chr(10),'',str_replace('\\n','',trim($row['images']))),
                 $row['quantity']
             );
