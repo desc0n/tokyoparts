@@ -5,6 +5,8 @@
  */
 class Model_CRM extends Kohana_Model
 {
+    const FARPOST_UPLOAD_ITEM_LIMIT = 1000;
+
     public $defaultLimit = 20;
 
     public $orderSatusesColor = [
@@ -1419,10 +1421,12 @@ class Model_CRM extends Kohana_Model
 
     /**
      * @param int $supplierId
+     * @param int $offset
+     * @param int $limit
      *
      * @return array
      */
-    public function findSuppliersItemsForFarpost($supplierId)
+    public function findSuppliersItemsForFarpost($supplierId, $offset, $limit)
     {
         return DB::select(
             'si.*',
@@ -1457,6 +1461,8 @@ class Model_CRM extends Kohana_Model
             ->and_where('si.brand', '!=', '')
             ->and_where('si.article', '!=', '')
             ->and_where('si.supplier_id', '=', $supplierId)
+            ->offset($offset)
+            ->limit($limit)
             ->order_by(['si.supplier_id', 'si.brand'])
             ->execute()
             ->as_array()
@@ -1465,29 +1471,38 @@ class Model_CRM extends Kohana_Model
 
     public function exportPriceToFarpost()
     {
+        $limit = self::FARPOST_UPLOAD_ITEM_LIMIT;
         $file = fopen('public/ftp/farpost/price.csv', 'w');
 
         foreach ($this->getSuppliersList() as $supplierData) {
-            $supplierItems = $this->findSuppliersItemsForFarpost((int)$supplierData['id']);
+            $supplierItemsCount = DB::select()->from('suppliers__items')->where('supplier_id', '=', (int)$supplierData['id'])->execute()->count();
+            $offset = 0;
 
-            foreach ($supplierItems as $key => $row) {
-                if (empty($row['brand']) || empty($row['article_search'])) {
-                    continue;
+            while ($supplierItemsCount > 0) {
+                $supplierItems = $this->findSuppliersItemsForFarpost((int)$supplierData['id'], $offset, $limit);
+
+                foreach ($supplierItems as $key => $row) {
+                    if (empty($row['brand']) || empty($row['article_search'])) {
+                        continue;
+                    }
+
+                    $line = sprintf(
+                        '%s;%s;%s;%s;%s;%s;%s;%s;%s;',
+                        $row['brand'],
+                        $row['article_search'],
+                        $row['name'] . ' ' . $row['article'],
+                        $this->calculateMarkupPrice($row['supplier_id'], $row['price']),
+                        $row['article'],
+                        str_replace('\\n','',trim($row['usages'])),
+                        $row['crosses'],
+                        str_replace('\\n','',trim($row['images'])),
+                        $row['quantity']
+                    );
+                    fwrite($file, mb_convert_encoding(str_replace(chr(10), '', $line) . chr(10), 'CP-1251'));
                 }
 
-                $line = sprintf(
-                    '%s;%s;%s;%s;%s;%s;%s;%s;%s;',
-                    $row['brand'],
-                    $row['article_search'],
-                    $row['name'] . ' ' . $row['article'],
-                    $this->calculateMarkupPrice($row['supplier_id'], $row['price']),
-                    $row['article'],
-                    str_replace('\\n','',trim($row['usages'])),
-                    $row['crosses'],
-                    str_replace('\\n','',trim($row['images'])),
-                    (empty($row['delivery_days']) ? $row['quantity'] : 'Под заказ доставка в течение ' . $row['delivery_days'] . ' дн.')
-                );
-                fwrite($file, mb_convert_encoding(str_replace(chr(10), '', $line) . chr(10), 'CP-1251'));
+                $offset += self::FARPOST_UPLOAD_ITEM_LIMIT;
+                $supplierItemsCount -= self::FARPOST_UPLOAD_ITEM_LIMIT;
             }
         }
 
