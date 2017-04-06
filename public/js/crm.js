@@ -20,6 +20,7 @@ $(document).ready(function () {
     $('.orders-list-table .action-ceil').on('click', function () {document.location='/crm/order/' + $(this).parent('tr').data('order-id');});
     if ($('#searchSpareByApiPreview').length && $('#searchOfferForm input[type=text][name=article]').val() != '') {searchSpareByApi($('#searchOfferForm input[type=text][name=article]').val());}
     $('#showOfferPriceFlag').on('change', function () {if($(this).prop('checked')){$('th.hidden-start-price').css('display', 'table-cell');$('td.hidden-start-price').css('display', 'table-cell');$('span.hidden-start-price').css('display', 'block');}else{$('.hidden-start-price').css('display', 'none');}});
+    $('#exportPriceToFarpostBtn').on('click', function () {$(this).attr('disabled', 'disabled');insertItemsTmp();});
 });
 function getOrderId() {return $('#orderId').val();}
 function addNeedPart() {
@@ -179,3 +180,5 @@ function clearSuppliersItems(supplierId) {$.ajax({url:'/ajax/clear_suppliers_ite
 function addSupplierMarkupRange(supplierId) {$.ajax({url:'/ajax/add_supplier_markup_range', type: 'POST', async: true, data:{supplierId:supplierId}}).done(function () {location.reload();});}
 function deleteItemImage(id) {$.ajax({url:'/ajax/delete_item_image', type: 'POST', async: true, data:{id:id}}).done(function () {$('#imageRow' + id).remove();});}
 function deleteItemUsage(id) {$.ajax({url:'/ajax/delete_item_usage', type: 'POST', async: true, data:{id:id}}).done(function () {$('#usageRow' + id).remove();});}
+function insertItemsTmp() {$.ajax({url:'/ajax/insert_items_tmp'}).done(function(){exportPriceToFarpost()});}
+function exportPriceToFarpost() {$.ajax({url:'/ajax/export_price_to_farpost', async: true}).done(function(response){response = $.trim(response); console.log(response);if (response == 'continue'){exportPriceToFarpost();}else if (response == 'end'){location.reload()}else{alert('Ошибка выгрузки!');}});}

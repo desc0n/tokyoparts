@@ -1471,42 +1471,103 @@ class Model_CRM extends Kohana_Model
 
     public function exportPriceToFarpost()
     {
-        $limit = self::FARPOST_UPLOAD_ITEM_LIMIT;
-        $file = fopen('public/ftp/farpost/price.csv', 'w');
+        $file = fopen('public/ftp/farpost/price.csv', 'a');
 
-        foreach ($this->getSuppliersList() as $supplierData) {
-            $supplierItemsCount = DB::select()->from('suppliers__items')->where('supplier_id', '=', (int)$supplierData['id'])->execute()->count();
-            $offset = 0;
+        $supplierItemsTmp = DB::select()->from('items__tmp')->limit(300)->execute()->as_array();
 
-            while ($supplierItemsCount > 0) {
-                $supplierItems = $this->findSuppliersItemsForFarpost((int)$supplierData['id'], $offset, $limit);
+        if (count($supplierItemsTmp) === 0) {
+            return 'end';
+        }
 
-                foreach ($supplierItems as $key => $row) {
-                    if (empty($row['brand']) || empty($row['article_search'])) {
-                        continue;
-                    }
+        foreach ($supplierItemsTmp as $row) {
+            DB::delete('items__tmp')->where('id', '=', $row['id'])->execute();
 
-                    $line = sprintf(
-                        '%s;%s;%s;%s;%s;%s;%s;%s;%s;',
-                        $row['brand'],
-                        $row['article_search'],
-                        $row['name'] . ' ' . $row['article'],
-                        $this->calculateMarkupPrice($row['supplier_id'], $row['price']),
-                        $row['article'],
-                        str_replace('\\n','',trim($row['usages'])),
-                        $row['crosses'],
-                        str_replace('\\n','',trim($row['images'])),
-                        $row['quantity']
-                    );
-                    fwrite($file, mb_convert_encoding(str_replace(chr(10), '', $line) . chr(10), 'CP-1251'));
-                }
-
-                $offset += self::FARPOST_UPLOAD_ITEM_LIMIT;
-                $supplierItemsCount -= self::FARPOST_UPLOAD_ITEM_LIMIT;
+            if (empty($row['brand']) || empty($row['article_search'])) {
+                continue;
             }
+
+            $line = sprintf(
+                '%s;%s;%s;%s;%s;%s;%s;%s;%s;',
+                $row['brand'],
+                $row['article_search'],
+                $row['description'],
+                $this->calculateMarkupPrice($row['supplier_id'], $row['price']),
+                $row['article'],
+                str_replace('\\n','',trim($row['usages'])),
+                $row['crosses'],
+                str_replace('\\n','',trim($row['images'])),
+                $row['quantity']
+            );
+            fwrite($file, mb_convert_encoding(str_replace(chr(10), '', $line) . chr(10), 'CP-1251'));
         }
 
         fclose($file);
+
+        return 'continue';
+    }
+
+    public function insertItemsTmp()
+    {
+        $file = fopen('public/ftp/farpost/price.csv', 'w');
+        fclose($file);
+
+        DB::query(Database::UPDATE, 'truncate table `items__tmp`')->execute();
+
+        DB::insert('items__tmp', [
+            'supplier_id',
+            'brand',
+            'article_search',
+            'description',
+            'price',
+            'article',
+            'usages',
+            'crosses',
+            'images',
+            'quantity'
+        ])
+            ->select(
+                DB::select(
+                    'si.supplier_id',
+                    'si.brand',
+                    'si.article_search',
+                    DB::expr("CONCAT(si.name, ' ', si.article)"),
+                    'si.price',
+                    'si.article',
+                    [
+                        DB::select(DB::expr("GROUP_CONCAT(iu.car SEPARATOR ', ')"))
+                            ->from(['items__usages', 'iu'])
+                            ->where('iu.brand', '=', DB::expr('si.brand'))
+                            ->and_where('iu.article', '=', DB::expr('si.article_search')),
+                        'usages'
+                    ],
+                    [
+                        DB::select(DB::expr("GROUP_CONCAT(cc.article SEPARATOR ', ')"))
+                            ->from(['crosses__crosses', 'cc'])
+                            ->join(['crosses__oem', 'co'])
+                            ->on('co.id', '=', 'cc.oem_crosses_id')
+                            ->where('co.oem', '=', DB::expr('si.article_search'))
+                            ->and_where('cc.article', '!=', DB::expr('si.article_search'))
+                            ->and_where('cc.article', '!=', DB::expr('si.article')),
+                        'crosses'
+                    ],
+                    [
+                        DB::select(DB::expr("CONCAT_WS(', ', GROUP_CONCAT(ii.local_src SEPARATOR ', '), GROUP_CONCAT(ii.outer_link SEPARATOR ', '))"))
+                            ->from(['items__images', 'ii'])
+                            ->where('ii.brand', '=', DB::expr('si.brand'))
+                            ->and_where('ii.article', '=', DB::expr('si.article_search')),
+                        'images'
+                    ],
+                    'si.quantity'
+                )
+                    ->from(['suppliers__items', 'si'])
+                    ->where('si.price', '!=', 0)
+                    ->and_where('si.quantity', '!=', 0)
+                    ->and_where('si.brand', '!=', '')
+                    ->and_where('si.article', '!=', '')
+                    ->order_by(['si.supplier_id', 'si.brand'])
+            )
+            ->execute()
+        ;
     }
 
     /**

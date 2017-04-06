@@ -52,10 +52,10 @@
         </span>
     </div>
 </form>
-<form method="post">
+<div class="form-group">
     <h3>Выгрузить на фарпост</h3>
     <div class="form-group col-lg-12">
-        <button class="btn btn-success" name="exportPriceToFarpost" value="1">
+        <button class="btn btn-success" id="exportPriceToFarpostBtn">
             <span class="fa fa-upload fa-fw"></span> Выгрузить
         </button>
     </div>
@@ -64,4 +64,4 @@
             <strong>Прайс доступен по ссылке.</strong> <a href="/public/ftp/farpost/price.csv" download>http://<?=$_SERVER['HTTP_HOST'];?>/public/ftp/farpost/price.csv</a>
         </div>
     </div>
-</form>
+</div>
