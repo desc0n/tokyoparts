@@ -1493,9 +1493,9 @@ class Model_CRM extends Kohana_Model
                 $row['description'],
                 $this->calculateMarkupPrice($row['supplier_id'], $row['price']),
                 $row['article'],
-                str_replace('\\n','',trim($row['usages'])),
+                str_replace(chr(10),'',str_replace('\\n','',trim($row['usages']))),
                 $row['crosses'],
-                str_replace('\\n','',trim($row['images'])),
+                str_replace(chr(10),'',str_replace('\\n','',trim($row['images']))),
                 $row['quantity']
             );
             fwrite($file, mb_convert_encoding(str_replace(chr(10), '', $line) . chr(10), 'CP-1251'));
@@ -1733,7 +1733,7 @@ class Model_CRM extends Kohana_Model
         $data = file($fileData['tmp_name']);
 
         foreach ($data as $row) {
-            $cells = explode(';', str_replace("\n", '', str_replace('"', '', $row)));
+            $cells = explode(';', str_replace(chr(10), '', str_replace("\n", '', str_replace('"', '', $row))));
 
             $brand = Arr::get($cells, 0);
             $article = $this->getSearchArticle(Arr::get($cells, 1));
