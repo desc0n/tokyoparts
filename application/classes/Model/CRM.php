@@ -291,7 +291,7 @@ class Model_CRM extends Kohana_Model
         $updateTask = $this->generateUpdateTask('file');
 
         foreach ($data as $row) {
-            $ceils = explode(';', $row);
+            $cells = explode(';', str_replace(chr(10), '', str_replace("\n", '', str_replace('"', '', $row))));
 
             $validData = $this->validateLoadPrice((int)$supplierId, Arr::get($ceils, 0), Arr::get($ceils, 1), Arr::get($ceils, 2), Arr::get($ceils, 3), Arr::get($ceils, 4));
 
@@ -567,7 +567,7 @@ class Model_CRM extends Kohana_Model
      */
     public function findSupplierItemByUpdateTask($updateTask)
     {
-        return DB::select('si.*', ['ss.name', 'supplier_name'])
+        $result = DB::select('si.*', ['ss.name', 'supplier_name'])
             ->from(['suppliers__items', 'si'])
             ->join(['suppliers__suppliers', 'ss'])
             ->on('ss.id', '=', 'si.supplier_id')
@@ -575,6 +575,12 @@ class Model_CRM extends Kohana_Model
             ->execute()
             ->as_array()
             ;
+
+        foreach ($result as $key => $value) {
+            $result[$key]['offer_price'] = $this->calculateMarkupPrice((int)$value['supplier_id'], $value['price']);
+        }
+
+        return $result;
     }
 
     /**
@@ -1842,7 +1848,7 @@ class Model_CRM extends Kohana_Model
         $data = file($fileData['tmp_name']);
 
         foreach ($data as $row) {
-            $cells = explode(';', $row);
+            $cells = explode(';', str_replace(chr(10), '', str_replace("\n", '', str_replace('"', '', $row))));
 
             $brand = Arr::get($cells, 0);
             $article = $this->getSearchArticle(Arr::get($cells, 1));

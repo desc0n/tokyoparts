@@ -16,13 +16,6 @@ class Controller_Ajax extends Controller
     {
         $this->auto_render = false;
         $this->is_ajax = true;
-
-        if ($json) {
-            $this->response->headers('Content-Type', 'application/json');
-        } else {
-            $this->response->headers('Content-Type', 'application/text');
-        }
-
         $this->response->body($body);
     }
 
