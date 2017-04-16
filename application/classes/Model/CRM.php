@@ -18,11 +18,15 @@ class Model_CRM extends Kohana_Model
 
 	private $user_id;
 
+    /** @var  Model_Supplier */
+    private $supplierModel;
+
 	public function __construct()
 	{
         $this->user_id = Auth::instance()->logged_in() ? Auth::instance()->get_user()->id : null;
 
 		DB::query(Database::UPDATE, "SET time_zone = '+10:00'")->execute();
+        $this->supplierModel = Model::factory('Supplier');
 	}
 
 	public function addOrder($postQuery)
@@ -240,24 +244,7 @@ class Model_CRM extends Kohana_Model
         ;
     }
 
-    /**
-     * @return array
-     */
-    public function getSuppliersList()
-    {
-        return DB::select('ss.*',
-            [
-                DB::select(DB::expr('COUNT(si.id)'))
-                    ->from(['suppliers__items', 'si'])
-                    ->where('si.supplier_id', '=', DB::expr('ss.id'))
-                    ->and_where('si.quantity', '!=', 0)
-                    ->and_where('si.price', '!=', 0),
-                'price_count'])
-            ->from(['suppliers__suppliers', 'ss'])
-            ->execute()
-            ->as_array()
-        ;
-    }
+
 
     /**
      * @param $supplierId
@@ -1071,7 +1058,7 @@ class Model_CRM extends Kohana_Model
 
 
         $apiData = [];
-        $suppliers = $this->getSuppliersList();
+        $suppliers = $this->supplierModel->getSuppliersList();
 
         foreach ($suppliers as $supplier) {
             if (!empty($supplier['api_name'])) {

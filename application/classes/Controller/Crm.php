@@ -5,6 +5,9 @@ class Controller_Crm extends Controller
     /** @var Model_CRM */
     private $crmModel;
 
+    /** @var  Model_Supplier */
+    private $supplierModel;
+
     public function __construct(Request $request, Response $response)
     {
         parent::__construct($request, $response);
@@ -14,6 +17,7 @@ class Controller_Crm extends Controller
         }
 
         $this->crmModel = Model::factory('CRM');
+        $this->supplierModel = Model::factory('Supplier');
     }
 
     public function action_index()
@@ -162,7 +166,7 @@ class Controller_Crm extends Controller
         }
 
         $content = View::factory('crm/suppliers_list')
-            ->set('suppliersList', $this->crmModel->getSuppliersList())
+            ->set('suppliersList', $this->supplierModel->getSuppliersList())
         ;
 
         $this->response->body(View::factory('crm/template')->set('content', $content));
