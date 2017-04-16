@@ -293,7 +293,7 @@ class Model_CRM extends Kohana_Model
         foreach ($data as $row) {
             $cells = explode(';', str_replace(chr(10), '', str_replace("\n", '', str_replace('"', '', $row))));
 
-            $validData = $this->validateLoadPrice((int)$supplierId, Arr::get($ceils, 0), Arr::get($ceils, 1), Arr::get($ceils, 2), Arr::get($ceils, 3), Arr::get($ceils, 4));
+            $validData = $this->validateLoadPrice((int)$supplierId, Arr::get($cells, 0), Arr::get($cells, 1), Arr::get($cells, 2), Arr::get($cells, 3), Arr::get($cells, 4));
 
             array_push($validData, null);
             array_push($validData, $updateTask);
@@ -1404,18 +1404,18 @@ class Model_CRM extends Kohana_Model
         $loadCrosses = [];
 
         foreach ($data as $row) {
-            $ceils = explode(';', $row);
-            $oems = explode(',', $ceils[0]);
+            $cells = explode(';', $row);
+            $oems = explode(',', $cells[0]);
 
             foreach ($oems as $oem) {
                 $oem = $this->getSearchArticle($oem);
 
-                if (!empty($oem) && !empty($ceils[1]) && !empty($ceils[2])) {
+                if (!empty($oem) && !empty($cells[1]) && !empty($cells[2])) {
                     if (!isset($loadCrosses[$oem][0][0])) {
                         $loadCrosses[$oem][0][0] = [];
                     }
 
-                    $loadCrosses[$oem][0][0][] = ['brand' => $ceils[1], 'article' => $this->getSearchArticle($ceils[2])];
+                    $loadCrosses[$oem][0][0][] = ['brand' => $cells[1], 'article' => $this->getSearchArticle($cells[2])];
                 }
             }
         }
