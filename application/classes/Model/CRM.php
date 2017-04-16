@@ -366,6 +366,7 @@ class Model_CRM extends Kohana_Model
             'меньше 10' => 5,
             'больше 10' => 15,
             '10-100' => 20,
+            '10100' => 20,
         ];
 
         $value = Arr::get($replaceVariant, $value, $value);
