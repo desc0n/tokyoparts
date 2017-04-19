@@ -1,3 +1,7 @@
+<?php
+/** @var Model_Price $priceModel */
+$priceModel = Model::factory('Price');
+?>
 <div class="form-group">
     <div class="alert alert-info">
         <strong>Формат прайса.</strong> Бренд, артикул, название, цена, количество
@@ -16,24 +20,27 @@
             <td><?=$supplier['name'];?></td>
             <td class="text-center"><?=$supplier['price_count'];?></td>
             <td class="text-center row">
-                <div class="col-lg-6">
+                <div class="col-lg-5">
                     <form role="form" method="post" enctype='multipart/form-data'>
                         <div class="row">
                             <div class="col-lg-6">
                                 <input type="file" name="priceName">
                             </div>
                             <div class="col-lg-6">
-                                <button type="submit" class="btn btn-default">Загрузить</button>
+                                <button type="submit" class="btn btn-default btn-sm">Загрузить</button>
                             </div>
                         </div>
                         <input type="hidden" name="supplierId" value="<?=$supplier['id'];?>">
                     </form>
                 </div>
                 <div class="col-lg-3">
-                    <button class="btn btn-danger" onclick="clearSuppliersItems(<?=$supplier['id'];?>);">Очистить прайс</button>
+                    <button class="btn btn-danger btn-sm" onclick="clearSuppliersItems(<?=$supplier['id'];?>);">Очистить прайс</button>
                 </div>
-                <div class="col-lg-3">
-                    <a class="btn btn-primary" href="/crm/supplier_markup/<?=$supplier['id'];?>">Изменить наценки</a>
+                <div class="col-lg-2">
+                    <a class="btn btn-primary btn-sm" href="/crm/supplier_markup/<?=$supplier['id'];?>">Наценка</a>
+                </div>
+                <div class="col-lg-2">
+                    <button class="btn btn-success btn-sm" <?=(!empty(Arr::get($priceModel->getParsingSettings(), $supplier['alias'], [])) ? null : 'disabled');?> onclick="$(this).attr('disabled', 'disabled');autoUpdateSupplierItems(<?=$supplier['id'];?>);">Обновить</button>
                 </div>
             </td>
         </tr>

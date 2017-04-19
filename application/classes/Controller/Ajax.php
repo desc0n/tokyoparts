@@ -5,11 +5,15 @@ class Controller_Ajax extends Controller
     /** @var Model_CRM */
     private $crmModel;
 
+    /** @var Model_Price */
+    private $priceModel;
+
     public function __construct(Request $request, Response $response)
     {
         parent::__construct($request, $response);
 
         $this->crmModel = Model::factory('CRM');
+        $this->priceModel = Model::factory('Price');
     }
 
     private function render($body, $json = true)
@@ -103,5 +107,10 @@ class Controller_Ajax extends Controller
     public function action_export_price_to_farpost()
     {
         $this->render($this->crmModel->exportPriceToFarpost(), false);
+    }
+
+    public function action_auto_update_supplier_items()
+    {
+        $this->render((int)$this->priceModel->autoUpdateSupplierItems((int)$this->request->post('supplierId')));
     }
 }

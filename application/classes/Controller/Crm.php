@@ -8,6 +8,9 @@ class Controller_Crm extends Controller
     /** @var  Model_Supplier */
     private $supplierModel;
 
+    /** @var  Model_Price */
+    private $priceModel;
+
     public function __construct(Request $request, Response $response)
     {
         parent::__construct($request, $response);
@@ -18,6 +21,7 @@ class Controller_Crm extends Controller
 
         $this->crmModel = Model::factory('CRM');
         $this->supplierModel = Model::factory('Supplier');
+        $this->priceModel = Model::factory('Price');
     }
 
     public function action_index()
@@ -146,7 +150,7 @@ class Controller_Crm extends Controller
 	public function action_suppliers_list()
 	{
 	    if ((int)$this->request->post('addSupplier') === 1) {
-	        $this->crmModel->addSupplier($this->request->post('name'));
+	        $this->supplierModel->addSupplier($this->request->post('name'));
 
             HTTP::redirect($this->request->referrer());
         }
@@ -160,7 +164,7 @@ class Controller_Crm extends Controller
         $filename=Arr::get($_FILES, 'priceName', []);
 
         if (!empty($filename)) {
-            $this->crmModel->loadSupplierPrice($_FILES, $this->request->post('supplierId'));
+            $this->priceModel->manualUpdateSupplierItems($_FILES, (int)$this->request->post('supplierId'));
 
             HTTP::redirect($this->request->referrer());
         }
@@ -238,8 +242,8 @@ class Controller_Crm extends Controller
         }
 
         $content = View::factory('crm/supplier_markup')
-            ->set('supplier', $this->crmModel->findSupplierById($this->request->param('id')))
-            ->set('supplierMarkup', $this->crmModel->getSupplierMarkup($this->request->param('id')))
+            ->set('supplier', $this->supplierModel->findSupplierById($this->request->param('id')))
+            ->set('supplierMarkup', $this->supplierModel->getSupplierMarkup($this->request->param('id')))
             ->set('supplierMarkupRanges', $this->crmModel->findSupplierMarkupRangesBySupplier($this->request->param('id')))
         ;
 

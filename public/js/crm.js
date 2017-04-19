@@ -182,3 +182,4 @@ function deleteItemImage(id) {$.ajax({url:'/ajax/delete_item_image', type: 'POST
 function deleteItemUsage(id) {$.ajax({url:'/ajax/delete_item_usage', type: 'POST', async: true, data:{id:id}}).done(function () {$('#usageRow' + id).remove();});}
 function insertItemsTmp() {$.ajax({url:'/ajax/insert_items_tmp'}).done(function(){exportPriceToFarpost()});}
 function exportPriceToFarpost() {$.ajax({url:'/ajax/export_price_to_farpost', async: true}).done(function(response){response = $.trim(response); console.log(response);if (response == 'continue'){exportPriceToFarpost();}else if (response == 'end'){location.reload()}else{alert('Ошибка выгрузки!');}});}
+function autoUpdateSupplierItems(supplierId) {$.ajax({url:'/ajax/auto_update_supplier_items', type: 'POST', async: true, data:{supplierId:supplierId}}).done(function(response){if($.trim(response.replace(/\n+/g, '')) == 1) {location.reload()} else {alert('Ошибка обновления!');}});}

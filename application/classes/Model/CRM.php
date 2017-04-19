@@ -18,15 +18,11 @@ class Model_CRM extends Kohana_Model
 
 	private $user_id;
 
-    /** @var  Model_Supplier */
-    private $supplierModel;
-
 	public function __construct()
 	{
         $this->user_id = Auth::instance()->logged_in() ? Auth::instance()->get_user()->id : null;
 
 		DB::query(Database::UPDATE, "SET time_zone = '+10:00'")->execute();
-        $this->supplierModel = Model::factory('Supplier');
 	}
 
 	public function addOrder($postQuery)
@@ -244,129 +240,6 @@ class Model_CRM extends Kohana_Model
         ;
     }
 
-
-
-    /**
-     * @param $supplierId
-     * @return false|array
-     */
-    public function findSupplierById($supplierId)
-    {
-        return DB::select()
-            ->from('suppliers__suppliers')
-            ->where('id', '=', $supplierId)
-            ->limit(1)
-            ->execute()
-            ->current()
-        ;
-    }
-
-    /**
-     * @param $name
-     */
-    public function addSupplier($name)
-    {
-        DB::insert('suppliers__suppliers', ['name'])
-            ->values([$name])
-            ->execute()
-        ;
-    }
-
-    public function loadSupplierPrice(array $fileData, $supplierId)
-    {
-        $data = file($fileData['priceName']['tmp_name']);
-        $updateTask = $this->generateUpdateTask('file');
-
-        foreach ($data as $row) {
-            $cells = explode(';', str_replace(chr(10), '', str_replace("\n", '', str_replace('"', '', $row))));
-
-            $validData = $this->validateLoadPrice((int)$supplierId, Arr::get($cells, 0), Arr::get($cells, 1), Arr::get($cells, 2), Arr::get($cells, 3), Arr::get($cells, 4));
-
-            array_push($validData, null);
-            array_push($validData, $updateTask);
-
-            if (!empty($validData)) {
-                $this->setSupplierItem($validData);
-            }
-        }
-
-        DB::update('suppliers__items')
-            ->set([
-                'quantity' => 0
-            ])
-            ->where('supplier_id', '=', $supplierId)
-            ->and_where('update_task', '!=', $updateTask)
-            ->execute();
-    }
-
-    private function setSupplierItem($validData)
-    {
-        if (count($validData) === 10) {
-            if(!empty($validData[8])) {
-                $supplierItem = $this->findSupplierItemBySupplierAndVendorId($validData[0], $validData[8]);
-            } else {
-                $supplierItem = $this->findSupplierItemBySupplierAndHash($validData[0], $validData[7]);
-            }
-
-            if (empty($supplierItem)) {
-                DB::insert('suppliers__items', ['supplier_id', 'brand', 'article', 'article_search', 'name', 'price', 'quantity', 'item_hash', 'vendor_id', 'update_task'])
-                    ->values($validData)
-                    ->execute();
-            } else {
-                DB::update('suppliers__items')
-                    ->set([
-                        'price' => $validData[5],
-                        'quantity' => $validData[6],
-                        'update_task' => $validData[9],
-                    ])
-                    ->where('id', '=', $supplierItem['id'])
-                    ->execute();
-            }
-        }
-    }
-
-    /**
-     * @param int $supplierId
-     * @param string $brand
-     * @param string $article
-     * @param string $name
-     * @param string $price
-     * @param string $quantity
-     *
-     * @return array
-     */
-    public function validateLoadPrice($supplierId, $brand, $article, $name, $price, $quantity)
-    {
-        if(empty($supplierId) || empty($brand) || empty($article) || empty($name) || empty($price) || empty($quantity)) {
-            return [];
-        }
-
-        $price = $this->validatePrice($price);
-        $quantity = $this->validateQuantity($quantity);
-
-        return [$supplierId, $brand, $article, $this->getSearchArticle($article), $name, $price, $quantity, md5($brand . $article)];
-    }
-
-    public function validateQuantity($value)
-    {
-        $replaceVariant = [
-            'меньше 10' => 5,
-            'больше 10' => 15,
-            '10-100' => 20,
-            '10100' => 20,
-        ];
-
-        $value = Arr::get($replaceVariant, $value, $value);
-        $value = preg_replace( '/[^[:print:]]/', '',(int)$value);
-
-        return preg_replace('/[\D]+/', '', $value);
-    }
-
-    public function validatePrice($value)
-    {
-        return preg_replace( '/[^[:print:]]/', '',(int)$value);
-    }
-
     public function getSearchArticle($article)
     {
         return preg_replace('/[^\w\d]+/i', '', $article);
@@ -512,41 +385,6 @@ class Model_CRM extends Kohana_Model
             ->execute()
             ->current()
         ;
-    }
-
-    /**
-     * @param int $supplierId
-     * @param string $vendorId
-     * @return mixed
-     */
-    public function findSupplierItemBySupplierAndVendorId($supplierId, $vendorId)
-    {
-        return DB::select()
-            ->from('suppliers__items')
-            ->where('vendor_id', '=', $vendorId)
-            ->and_where('supplier_id', '=', $supplierId)
-            ->limit(1)
-            ->execute()
-            ->current()
-            ;
-    }
-
-
-    /**
-     * @param int $supplierId
-     * @param string $hash
-     * @return mixed
-     */
-    public function findSupplierItemBySupplierAndHash($supplierId, $hash)
-    {
-        return DB::select()
-            ->from('suppliers__items')
-            ->where('item_hash', '=', $hash)
-            ->and_where('supplier_id', '=', $supplierId)
-            ->limit(1)
-            ->execute()
-            ->current()
-            ;
     }
 
     /**
@@ -1056,14 +894,19 @@ class Model_CRM extends Kohana_Model
         /** @var Model_API $apiModel */
         $apiModel = Model::factory('API');
 
+        /** @var Model_Supplier $supplierModel */
+        $supplierModel = Model::factory('Supplier');
+
+        /** @var Model_Price $priceModel */
+        $priceModel = Model::factory('Price');
 
         $apiData = [];
-        $suppliers = $this->supplierModel->getSuppliersList();
+        $suppliers = $supplierModel->getSuppliersList();
 
         foreach ($suppliers as $supplier) {
-            if (!empty($supplier['api_name'])) {
+            if (!empty($supplier['alias'])) {
                 $apiData[] = [
-                    $supplier['id'] => $apiModel->getApiData($supplier['api_name'], $article)
+                    $supplier['id'] => $apiModel->getApiData($supplier['alias'], $article)
                 ];
             }
         }
@@ -1072,89 +915,7 @@ class Model_CRM extends Kohana_Model
             $this->addCrosses(mb_strtoupper($article), $apiData, 'api');
         }
 
-        return $this->loadSupplierPriceFromApi($apiData);
-    }
-
-    /**
-     * @param array $apiData
-     * @return null|string
-     */
-    public function loadSupplierPriceFromApi(array $apiData)
-    {
-        /** @var Model_API $apiModel */
-        $apiModel = Model::factory('API');
-
-        if (empty($apiData)) {
-            return null;
-        }
-
-        $updateTask = $this->generateUpdateTask('api');
-        $loadPriceData = [];
-
-        foreach ($apiData as $supplierApiData) {
-            foreach ($supplierApiData as $supplierId => $warehouseApiData) {
-                $supplierData = $this->findSupplierById($supplierId);
-                $apiSettings = Arr::get($apiModel->getApiSettings(), $supplierData['api_name'], []);
-
-                foreach ($warehouseApiData as $warehouseId => $data) {
-                    if (count($apiSettings) && !in_array($warehouseId, Arr::get($apiSettings, 'access_warehouse', []))) {
-                        continue;
-                    }
-
-                    foreach ($data as $value) {
-                        $validData = $this->validateLoadPrice(
-                            $supplierId,
-                            $value['brand'],
-                            $value['article'],
-                            $value['name'],
-                            $value['price'],
-                            $value['quantity']
-                        );
-
-                        if (empty($validData)) {
-                            continue;
-                        }
-
-                        array_push($validData, $value['vendor_id']);
-                        array_push($validData, $updateTask);
-
-                        $loadPriceData[] = $validData;
-                    }
-                }
-            }
-        }
-
-        foreach ($loadPriceData as $validData) {
-            $this->setSupplierItem($validData);
-        }
-
-        return $updateTask;
-    }
-
-    /**
-     * @param string $type
-     *
-     * @return string
-     */
-    private function generateUpdateTask($type)
-    {
-        $now = new DateTime();
-        return $type . '.' . $now->format('YmdHis');
-    }
-
-    /**
-     * @param $supplierId
-     * @return false|array
-     */
-    public function getSupplierMarkup($supplierId)
-    {
-        return DB::select()
-            ->from('suppliers__markups')
-            ->limit(1)
-            ->where('supplier_id', '=', $supplierId)
-            ->execute()
-            ->current()
-        ;
+        return $priceModel->loadSupplierPriceFromApi($apiData);
     }
 
     /**
@@ -1176,7 +937,10 @@ class Model_CRM extends Kohana_Model
      */
     private function setSupplierMarkup($supplierId, $markup)
     {
-        if (!$this->getSupplierMarkup($supplierId)) {
+        /** @var Model_Supplier $supplierModel */
+        $supplierModel = Model::factory('Supplier');
+
+        if (!$supplierModel->getSupplierMarkup($supplierId)) {
             DB::insert('suppliers__markups', ['supplier_id', 'markup', 'updated_at'])
                 ->values([$supplierId, $markup, DB::expr('NOW()')])
                 ->execute()
@@ -1280,7 +1044,10 @@ class Model_CRM extends Kohana_Model
      */
     public function calculateMarkupPrice($supplierId, $price)
     {
-        $supplierMarkup = $this->getSupplierMarkup($supplierId);
+        /** @var Model_Supplier $supplierModel */
+        $supplierModel = Model::factory('Supplier');
+
+        $supplierMarkup = $supplierModel->getSupplierMarkup($supplierId);
         $price = $price * (1 + (Arr::get($supplierMarkup, 'markup', 0) / 100));
         $supplierMarkupRangeValue = $this->findSupplierMarkupRangesBySupplierAndRanges($supplierId, $price);
 
