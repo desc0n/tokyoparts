@@ -109,8 +109,13 @@ class Controller_Ajax extends Controller
         $this->render($this->crmModel->exportPriceToFarpost(), false);
     }
 
+    public function action_insert_items_tmp_for_auto_update()
+    {
+        $this->render((int)$this->priceModel->insertItemsTmpForAutoUpdate((int)$this->request->post('supplierId')));
+    }
+
     public function action_auto_update_supplier_items()
     {
-        $this->render((int)$this->priceModel->autoUpdateSupplierItems((int)$this->request->post('supplierId')));
+        $this->render($this->priceModel->autoUpdateSupplierItems());
     }
 }

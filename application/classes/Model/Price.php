@@ -42,10 +42,44 @@ class Model_Price extends Kohana_Model
     }
 
     /**
+     * @return string
+     */
+    public function autoUpdateSupplierItems()
+    {
+        $supplierItemsTmp = DB::select()->from('items__tmp')->limit(300)->execute()->as_array();
+
+        if (count($supplierItemsTmp) === 0) {
+            return 'end';
+        }
+
+        $data = [];
+
+        foreach ($supplierItemsTmp as $row) {
+            DB::delete('items__tmp')->where('id', '=', $row['id'])->execute();
+
+            if (empty($row['brand']) || empty($row['article_search'])) {
+                continue;
+            }
+
+            $row['name'] = $row['description'];
+            $supplierId = !isset($supplierId) ? $row['supplier_id'] : $supplierId;
+            $updateTask = !isset($updateTask) ? $row['update_task'] : $updateTask;
+
+            $data[] = $row;
+        }
+
+        if (count($data) > 0 && !empty($supplierId) && !empty($updateTask)) {
+            $this->loadSupplierPrice($data, $supplierId, $updateTask);
+        }
+
+        return 'continue';
+    }
+
+    /**
      * @param $supplierId
      * @return bool
      */
-    public function autoUpdateSupplierItems($supplierId)
+    public function insertItemsTmpForAutoUpdate($supplierId)
     {
         /** @var Model_Supplier $supplierModel */
         $supplierModel = Model::factory('Supplier');
@@ -75,6 +109,12 @@ class Model_Price extends Kohana_Model
         return $this->loadSupplierPrice($this->parseManualFile($data), $supplierId, $this->generateUpdateTask('file'));
     }
 
+    /**
+     * @param $supplierId
+     * @param $settings
+     *
+     * @return bool
+     */
     public function loadPriceFromFtp($supplierId, $settings)
     {
         $fileName =  'public/prices/' . Arr::get($settings, 'dir') . '/' . Arr::get($settings, 'file');
@@ -85,12 +125,18 @@ class Model_Price extends Kohana_Model
 
         switch (Arr::get($settings, 'parsingType')) {
             case 'Excel':
-            return $this->loadSupplierPrice($this->parseXlsFile($settings, $fileName), $supplierId, $this->generateUpdateTask('file'));
+            return $this->loadTmpSupplierPrice($this->parseXlsFile($settings, $fileName), $supplierId);
         }
 
         return false;
     }
 
+    /**
+     * @param array $settings
+     * @param string $fileName
+     *
+     * @return array
+     */
     public function parseXlsFile($settings, $fileName)
     {
         $objPHPExcel = Model::factory('Excel_PHPExcel_IOFactory')->load($fileName);
@@ -133,6 +179,68 @@ class Model_Price extends Kohana_Model
         return $data;
     }
 
+    /**
+     * @param array $data
+     * @param int $supplierId
+     *
+     * @return bool
+     */
+    public function loadTmpSupplierPrice(array $data, $supplierId)
+    {
+        /** @var Model_CRM $crmModel */
+        $crmModel = Model::factory('CRM');
+
+        DB::query(Database::UPDATE, 'truncate table `items__tmp`')->execute();
+
+        $updateTask = $this->generateUpdateTask('auto');
+
+        foreach ($data as $key => $value) {
+            if (empty($value['brand']) || empty($value['article']) || empty($value['quantity']) || empty($value['price'])) {
+                unset($data[$key]);
+                continue;
+            }
+
+            DB::insert('items__tmp', [
+                'supplier_id',
+                'brand',
+                'article_search',
+                'description',
+                'price',
+                'article',
+                'usages',
+                'crosses',
+                'images',
+                'quantity',
+                'update_task'
+            ])
+                ->values([
+                    $supplierId,
+                    $value['brand'],
+                    $crmModel->getSearchArticle($value['article']),
+                    $value['name'],
+                    $value['price'],
+                    $value['article'],
+                    '',
+                    '',
+                    '',
+                    $value['quantity'],
+                    $updateTask
+                ])
+                ->execute();
+
+            unset($data[$key]);
+        }
+
+        return true;
+    }
+
+    /**
+     * @param array $data
+     * @param int $supplierId
+     * @param string $updateTask
+     *
+     * @return bool
+     */
     public function loadSupplierPrice(array $data, $supplierId, $updateTask)
     {
         foreach ($data as $row) {

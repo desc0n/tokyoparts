@@ -16,7 +16,7 @@ $priceModel = Model::factory('Price');
     </thead>
     <tbody>
         <?foreach ($suppliersList as $supplier) {?>
-        <tr>
+        <tr id="supplierRow<?=$supplier['id'];?>">
             <td><?=$supplier['name'];?></td>
             <td class="text-center"><?=$supplier['price_count'];?></td>
             <td class="text-center row">
@@ -40,7 +40,7 @@ $priceModel = Model::factory('Price');
                     <a class="btn btn-primary btn-sm" href="/crm/supplier_markup/<?=$supplier['id'];?>">Наценка</a>
                 </div>
                 <div class="col-lg-2">
-                    <button class="btn btn-success btn-sm" <?=(!empty(Arr::get($priceModel->getParsingSettings(), $supplier['alias'], [])) ? null : 'disabled');?> onclick="$(this).attr('disabled', 'disabled');autoUpdateSupplierItems(<?=$supplier['id'];?>);">Обновить</button>
+                    <button class="btn btn-success btn-sm autoload-btn" <?=(!empty(Arr::get($priceModel->getParsingSettings(), $supplier['alias'], [])) ? null : 'disabled');?> onclick="insertItemsTmpForAutoUpdate(<?=$supplier['id'];?>);">Обновить</button>
                 </div>
             </td>
         </tr>
