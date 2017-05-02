@@ -154,8 +154,6 @@ class Model_Price extends Kohana_Model
             ];
         }
 
-        unset($positions);
-        unset($objPHPExcel);
         return $data;
     }
 
@@ -202,33 +200,33 @@ class Model_Price extends Kohana_Model
                 continue;
             }
 
-            DB::insert('items__tmp', [
-                'supplier_id',
-                'brand',
-                'article_search',
-                'description',
-                'price',
-                'article',
-                'usages',
-                'crosses',
-                'images',
-                'quantity',
-                'update_task'
-            ])
-                ->values([
-                    $supplierId,
-                    $value['brand'],
-                    $crmModel->getSearchArticle($value['article']),
-                    $value['name'],
-                    $value['price'],
-                    $value['article'],
-                    '',
-                    '',
-                    '',
-                    $value['quantity'],
-                    $updateTask
-                ])
-                ->execute();
+//            DB::insert('items__tmp', [
+//                'supplier_id',
+//                'brand',
+//                'article_search',
+//                'description',
+//                'price',
+//                'article',
+//                'usages',
+//                'crosses',
+//                'images',
+//                'quantity',
+//                'update_task'
+//            ])
+//                ->values([
+//                    $supplierId,
+//                    $value['brand'],
+//                    $crmModel->getSearchArticle($value['article']),
+//                    $value['name'],
+//                    $value['price'],
+//                    $value['article'],
+//                    '',
+//                    '',
+//                    '',
+//                    $value['quantity'],
+//                    $updateTask
+//                ])
+//                ->execute();
 
             unset($data[$key]);
         }
