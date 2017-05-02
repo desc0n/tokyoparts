@@ -154,6 +154,8 @@ class Model_Price extends Kohana_Model
             ];
         }
 
+        unset($positions);
+        unset($objPHPExcel);
         return $data;
     }
 
