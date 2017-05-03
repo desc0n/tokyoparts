@@ -190,9 +190,27 @@ class Model_Price extends Kohana_Model
         /** @var Model_CRM $crmModel */
         $crmModel = Model::factory('CRM');
 
+        if (count($data) === 0) {
+            return true;
+        }
+
         DB::query(Database::UPDATE, 'truncate table `items__tmp`')->execute();
 
         $updateTask = $this->generateUpdateTask('auto');
+        $query = DB::insert('items__tmp', [
+            'supplier_id',
+            'brand',
+            'article_search',
+            'description',
+            'price',
+            'article',
+            'usages',
+            'crosses',
+            'images',
+            'quantity',
+            'update_task'
+        ]);
+        $queryCount = 0;
 
         foreach ($data as $key => $value) {
             if (empty($value['brand']) || empty($value['article']) || empty($value['quantity']) || empty($value['price'])) {
@@ -200,19 +218,7 @@ class Model_Price extends Kohana_Model
                 continue;
             }
 
-            DB::insert('items__tmp', [
-                'supplier_id',
-                'brand',
-                'article_search',
-                'description',
-                'price',
-                'article',
-                'usages',
-                'crosses',
-                'images',
-                'quantity',
-                'update_task'
-            ])
+            $query
                 ->values([
                     $supplierId,
                     $value['brand'],
@@ -226,9 +232,33 @@ class Model_Price extends Kohana_Model
                     $value['quantity'],
                     $updateTask
                 ]);
-//                ->execute();
 
             unset($data[$key]);
+            $queryCount++;
+
+            if ($queryCount >= 30) {
+                $query->execute();
+                $queryCount = 0;
+                $query = DB::insert('items__tmp', [
+                    'supplier_id',
+                    'brand',
+                    'article_search',
+                    'description',
+                    'price',
+                    'article',
+                    'usages',
+                    'crosses',
+                    'images',
+                    'quantity',
+                    'update_task'
+                ]);
+            }
+        }
+
+        try {
+            $query->execute();
+        } catch (Exception $e) {
+            return true;
         }
 
         return true;
