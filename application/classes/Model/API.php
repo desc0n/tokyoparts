@@ -13,24 +13,12 @@ class Model_API extends Kohana_Model
 
     private $queryString;
 
-    private $apiSettings = [
-        'mxGroup' => [
-            'login' => 'tokyo.vladivostok@gmail.com',
-            'password' => 'n012nn125',
-            'url' => 'http://zakaz.mxgroup.ru/mxapi/',
-            'type' => 'get',
-            'responseType' => 'curl',
-            'access_warehouse' => [84,91,133]
-        ],
-        'rossko' => [
-            'key1' => '929e473ddca098b52473628fd7546ecd',
-            'key2' => 'abeaabec87f7d6ba68724d5f007b9c07',
-            'url' => 'http://vl.rossko.ru/service/v1/GetSearch?wsdl',
-            'type' => 'get',
-            'responseType' => 'soap',
-            'access_warehouse' => ['ОТ0000093', 'HST154']
-        ]
-    ];
+    private $apiSettings = [];
+
+    public function __construct()
+    {
+        $this->apiSettings = Kohana::$config->load('api')->as_array();
+    }
 
     /**
      * @param $type
