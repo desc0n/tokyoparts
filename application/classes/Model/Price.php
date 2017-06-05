@@ -5,25 +5,7 @@
  */
 class Model_Price extends Kohana_Model
 {
-    public function __construct()
-    {
-        DB::query(Database::UPDATE, "SET time_zone = '+10:00'")->execute();
-    }
-
-    private $parsingSettings = [
-        'mxGroup' => [
-            'type' => 'ftp',
-            'dir' => 'mx',
-            'file' => 'PriceMX_d084-df4d.xlsx',
-            'parsingType' => 'Excel',
-            'brand' => 'B',
-            'article' => 'A',
-            'name' => 'D',
-            'quantity' => 'E',
-            'price' => 'F',
-            'ignoreFirstRow' => true
-        ]
-    ];
+    private $parsingSettings = [];
 
     private $manualParsingSettings = [
         'brand' => 0,
@@ -32,6 +14,12 @@ class Model_Price extends Kohana_Model
         'quantity' => 4,
         'price' => 3,
     ];
+
+    public function __construct()
+    {
+        DB::query(Database::UPDATE, "SET time_zone = '+10:00'")->execute();
+        $this->parsingSettings = Kohana::$config->load('parsing')->as_array();
+    }
 
     /**
      * @return array
@@ -76,7 +64,7 @@ class Model_Price extends Kohana_Model
     }
 
     /**
-     * @param $supplierId
+     * @param int $supplierId
      * @return bool
      */
     public function insertItemsTmpForAutoUpdate($supplierId)
@@ -92,6 +80,8 @@ class Model_Price extends Kohana_Model
         switch ($updateType) {
             case 'ftp':
                 return $this->loadPriceFromFtp($supplierId, $parsingSettings);
+            case 'mail':
+                return $this->loadPriceFromMail($supplierId, $parsingSettings);
         }
 
         return true;
@@ -129,6 +119,62 @@ class Model_Price extends Kohana_Model
         }
 
         return false;
+    }
+
+    /**
+     * @param $supplierId
+     * @param $settings
+     *
+     * @return bool
+     */
+    public function loadPriceFromMail($supplierId, $settings)
+    {
+        $this->extractFromMail($supplierId, $settings);
+
+        $fileName =  'public/prices/' . Arr::get($settings, 'dir') . '/' . Arr::get($settings, 'file');
+
+        if (!is_file($fileName)) {
+            return false;
+        }
+
+        switch (Arr::get($settings, 'parsingType')) {
+            case 'Excel':
+            return $this->loadTmpSupplierPrice($this->parseXlsFile($settings, $fileName), $supplierId);
+        }
+
+        return false;
+    }
+
+    /**
+     * @param int $supplierId
+     * @param array $settings
+     */
+    private function extractFromMail($supplierId, $settings)
+    {
+        /** @var Model_Mail $mailModel */
+        $mailModel = Model::factory('Mail');
+        $emailOptions = Arr::get(Kohana::$config->load('email')->as_array(), 'options', []);
+
+        if (count($emailOptions) === 0) {
+            return;
+        }
+
+        $maxCreatedAt = DB::select([DB::expr('MAX(created_at)'), 'max_created_at'])
+            ->from('mail__messages')
+            ->where('supplier_id', '=', $supplierId)
+            ->execute()
+            ->get('max_created_at')
+        ;
+
+        $date = new \DateTime(!$maxCreatedAt ? null : $maxCreatedAt);
+        $messages = $mailModel->search(sprintf('SINCE "%s"', $date->format('d-M-Y')), 3);
+
+        if (count($messages) === 0) {
+            //Поиск не прочитанных писем, которые могли не попасть в предыдущий поиск
+            $messages = $mailModel->search('UNSEEN', 3);
+        }
+
+        $mailModel->loadAttachmentData($supplierId, $settings, $messages);
     }
 
     /**
