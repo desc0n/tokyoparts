@@ -83,8 +83,6 @@ class Model_Mail extends Kohana_Model
      */
     public function loadAttachmentData($supplierId, $settings, $messagesIds)
     {
-        $fileName = 'public/prices/' . $settings['dir'] . '/' . $settings['fileName'];
-
         foreach ($messagesIds as $messageId) {
             $structure = $this->getStructure($messageId);
 
@@ -93,7 +91,7 @@ class Model_Mail extends Kohana_Model
                     $parameters = $this->getParametersFromStructure($part);
 
                     if (isset($parameters['filename'])) {
-                        if ($this->saveAs($fileName, $part, $messageId, ($id + 1))) {
+                        if ($this->saveAs($settings, $part, $messageId, ($id + 1))) {
                             DB::insert('mail__messages', ['supplier_id', 'uid', 'filename', 'created_at'])
                                 ->values([$supplierId, $messageId, $parameters['filename'], DB::expr('NOW()')])
                                 ->execute()
@@ -108,15 +106,17 @@ class Model_Mail extends Kohana_Model
     /**
      * This function saves the attachment to the exact specified location.
      *
-     * @param  string $path
+     * @param  array $settings
      * @param  \stdClass $structure
      * @param  int $messageId
      *
      * @return bool
      */
-    public function saveAs($path, $structure, $messageId, $partId)
+    public function saveAs($settings, $structure, $messageId, $partId)
     {
+        $path = 'public/prices/' . $settings['dir'] . '/' . $settings['fileName'];
         $dirname = dirname($path);
+
         if (file_exists($path)) {
             if (!is_writable($path)) {
                 return false;
@@ -147,6 +147,15 @@ class Model_Mail extends Kohana_Model
         }
 
         fclose($filePointer);
+
+        if ($settings['archive']) {
+            $zip = new ZipArchive;
+
+            if ($zip->open($path) === TRUE) {
+                $zip->extractTo($dirname);
+                $zip->close();
+            }
+        }
 
         return $result;
     }

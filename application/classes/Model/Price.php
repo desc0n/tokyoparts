@@ -139,7 +139,9 @@ class Model_Price extends Kohana_Model
 
         switch (Arr::get($settings, 'parsingType')) {
             case 'Excel':
-            return $this->loadTmpSupplierPrice($this->parseXlsFile($settings, $fileName), $supplierId);
+                return $this->loadTmpSupplierPrice($this->parseXlsFile($settings, $fileName), $supplierId);
+            case 'csv':
+                return $this->loadTmpSupplierPrice($this->parseCsvFile($settings, $fileName), $supplierId);
         }
 
         return false;
@@ -191,6 +193,39 @@ class Model_Price extends Kohana_Model
         $data = [];
 
         foreach ($positions as $row) {
+            $data[] = [
+                'brand' => Arr::get($row, $settings['brand']),
+                'article' => Arr::get($row, $settings['article']),
+                'name' => Arr::get($row, $settings['name']),
+                'quantity' => Arr::get($row, $settings['quantity']),
+                'price' => Arr::get($row, $settings['price']),
+            ];
+        }
+
+        return $data;
+    }
+
+    /**
+     * @param array $settings
+     * @param string $fileName
+     *
+     * @return array
+     */
+    public function parseCsvFile($settings, $fileName)
+    {
+        $data = [];
+
+        $lines = file($fileName);
+
+        foreach ($lines as $line) {
+            if ($settings['ignoreFirstRow'] && $line === current($lines)) {
+                continue;
+            }
+
+            $line = str_replace('"', '', $line);
+
+            $row = explode(';', $line);
+
             $data[] = [
                 'brand' => Arr::get($row, $settings['brand']),
                 'article' => Arr::get($row, $settings['article']),
