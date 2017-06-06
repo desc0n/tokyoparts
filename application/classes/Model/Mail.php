@@ -114,7 +114,7 @@ class Model_Mail extends Kohana_Model
      */
     public function saveAs($settings, $structure, $messageId, $partId)
     {
-        $path = 'public/prices/' . $settings['dir'] . '/' . $settings['fileName'];
+        $path = 'public/prices/' . $settings['dir'] . '/' . $settings['file'];
         $dirname = dirname($path);
 
         if (file_exists($path)) {
