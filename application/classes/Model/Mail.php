@@ -91,7 +91,7 @@ class Model_Mail extends Kohana_Model
                     $parameters = $this->getParametersFromStructure($part);
 
                     if (isset($parameters['filename'])) {
-                        if ($this->saveAs($settings, $part, $messageId, ($id + 1))) {
+                        if ($this->saveAs($settings, $part, $messageId, ($id + 1), $parameters['filename'])) {
                             DB::insert('mail__messages', ['supplier_id', 'uid', 'filename', 'created_at'])
                                 ->values([$supplierId, $messageId, $parameters['filename'], DB::expr('NOW()')])
                                 ->execute()
@@ -109,12 +109,13 @@ class Model_Mail extends Kohana_Model
      * @param  array $settings
      * @param  \stdClass $structure
      * @param  int $messageId
+     * @param  string $filename
      *
      * @return bool
      */
-    public function saveAs($settings, $structure, $messageId, $partId)
+    public function saveAs($settings, $structure, $messageId, $partId, $filename)
     {
-        $path = 'public/prices/' . $settings['dir'] . '/' . $settings['file'];
+        $path = 'public/prices/' . $settings['dir'] . '/' . $filename;
         $dirname = dirname($path);
 
         if (file_exists($path)) {
