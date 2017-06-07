@@ -1325,7 +1325,7 @@ class Model_CRM extends Kohana_Model
                     ->and_where('si.quantity', '!=', 0)
                     ->and_where('si.brand', '!=', '')
                     ->and_where('si.article', '!=', '')
-                    ->order_by(['si.supplier_id', 'si.brand'])
+                    ->order_by(['si.supplier_id', 'si.brand', 'si.article'])
             )
             ->execute()
         ;
