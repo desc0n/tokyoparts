@@ -355,7 +355,7 @@ class Model_Price extends Kohana_Model
     public function loadSupplierPrice(array $data, $supplierId, $updateTask)
     {
         foreach ($data as $row) {
-            $validData = $this->validateLoadPrice((int)$supplierId, $row['brand'], $row['article'], $row['name'], $row['price'], $row['quantity']);
+            $validData = $this->validateLoadPrice((int)$supplierId, $row['brand'], (string)$row['article'], $row['name'], $row['price'], $row['quantity']);
 
             array_push($validData, null);
             array_push($validData, $updateTask);
@@ -463,7 +463,7 @@ class Model_Price extends Kohana_Model
                         $validData = $this->validateLoadPrice(
                             $supplierId,
                             $value['brand'],
-                            $value['article'],
+                            (string)$value['article'],
                             $value['name'],
                             $value['price'],
                             $value['quantity']
