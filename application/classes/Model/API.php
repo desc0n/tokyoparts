@@ -170,8 +170,8 @@ class Model_API extends Kohana_Model
                 }
 
                 $data[Arr::get($result, 'id')][] = [
-                    'brand' => Arr::get($result, 'brand'),
-                    'article' => Arr::get($result, 'articul'),
+                    'brand' => (string)Arr::get($result, 'brand'),
+                    'article' => (string)Arr::get($result, 'articul'),
                     'name' => Arr::get($result, 'name'),
                     'price' => Arr::get($result, 'discountprice', 0),
                     'quantity' => Arr::get($result, 'count', 0),
@@ -200,8 +200,8 @@ class Model_API extends Kohana_Model
                 }
 
                 $data[Arr::get($result, 'header')][] = [
-                    'brand' => Arr::get($responseData, 'brand'),
-                    'article' => Arr::get($responseData, 'article_code'),
+                    'brand' => (string)Arr::get($responseData, 'brand'),
+                    'article' => (string)Arr::get($responseData, 'article_code'),
                     'name' => Arr::get($responseData, 'header'),
                     'price' => Arr::get($result, 'price', 0),
                     'quantity' => Arr::get($result, 'deposit', 0),
@@ -264,8 +264,8 @@ class Model_API extends Kohana_Model
             }
 
             $data[$part['StocksList']['Stock']['StockID']][] = [
-                'brand' => $part['Brand'],
-                'article' => $part['PartNumber'],
+                'brand' => (string)$part['Brand'],
+                'article' => (string)$part['PartNumber'],
                 'name' => $part['Name'],
                 'price' => $part['StocksList']['Stock']['Price'],
                 'quantity' => $part['StocksList']['Stock']['Count'],
@@ -291,8 +291,8 @@ class Model_API extends Kohana_Model
                     }
 
                     $data[$item['StockID']][] = [
-                        'brand' => $part['Brand'],
-                        'article' => $part['PartNumber'],
+                        'brand' => (string)$part['Brand'],
+                        'article' => (string)$part['PartNumber'],
                         'name' => $part['Name'],
                         'price' => $item['Price'],
                         'quantity' => $item['Count'],
