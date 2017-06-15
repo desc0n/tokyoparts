@@ -195,7 +195,7 @@ class Model_Price extends Kohana_Model
         foreach ($positions as $row) {
             $data[] = [
                 'brand' => Arr::get($row, $settings['brand']),
-                'article' => Arr::get($row, $settings['article']),
+                'article' => (string)Arr::get($row, $settings['article']),
                 'name' => Arr::get($row, $settings['name']),
                 'quantity' => Arr::get($row, $settings['quantity']),
                 'price' => Arr::get($row, $settings['price']),
@@ -228,7 +228,7 @@ class Model_Price extends Kohana_Model
 
             $data[] = [
                 'brand' => Arr::get($row, $settings['brand']),
-                'article' => Arr::get($row, $settings['article']),
+                'article' => (string)Arr::get($row, $settings['article']),
                 'name' => Arr::get($row, $settings['name']),
                 'quantity' => Arr::get($row, $settings['quantity']),
                 'price' => Arr::get($row, $settings['price']),
@@ -250,7 +250,7 @@ class Model_Price extends Kohana_Model
             $cells = explode(';', str_replace(chr(10), '', str_replace("\n", '', str_replace('"', '', $row))));
             $data[] = [
                 'brand' => Arr::get($cells, 0),
-                'article' => Arr::get($cells, 1),
+                'article' => (string)Arr::get($cells, 1),
                 'name' => Arr::get($cells, 2),
                 'quantity' => Arr::get($cells, 4),
                 'price' => Arr::get($cells, 3),
@@ -303,7 +303,7 @@ class Model_Price extends Kohana_Model
                 ->values([
                     $supplierId,
                     $value['brand'],
-                    $crmModel->getSearchArticle($value['article']),
+                    $crmModel->getSearchArticle((string)$value['article']),
                     $value['name'],
                     $value['price'],
                     $value['article'],
