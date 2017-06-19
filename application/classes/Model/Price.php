@@ -199,7 +199,7 @@ class Model_Price extends Kohana_Model
                 'name' => Arr::get($row, $settings['name']),
                 'quantity' => Arr::get($row, $settings['quantity']),
                 'price' => Arr::get($row, $settings['price']),
-                'oem' => Arr::get($row, $settings['oem'], ''),
+                'usage' => Arr::get($row, $settings['usage'], ''),
                 'crosses' => Arr::get($row, $settings['crosses'], ''),
             ];
         }
@@ -234,7 +234,7 @@ class Model_Price extends Kohana_Model
                 'name' => Arr::get($row, $settings['name']),
                 'quantity' => Arr::get($row, $settings['quantity']),
                 'price' => Arr::get($row, $settings['price']),
-                'oem' => Arr::get($row, $settings['oem'], ''),
+                'usage' => Arr::get($row, $settings['usage'], ''),
                 'crosses' => Arr::get($row, $settings['crosses'], ''),
             ];
         }
@@ -258,7 +258,7 @@ class Model_Price extends Kohana_Model
                 'name' => Arr::get($cells, 2),
                 'quantity' => Arr::get($cells, 4),
                 'price' => Arr::get($cells, 3),
-                'oem' => Arr::get($cells, 5, ''),
+                'usage' => Arr::get($cells, 5, ''),
                 'crosses' => Arr::get($cells, 6, ''),
             ];
         }
