@@ -1166,11 +1166,11 @@ class Model_CRM extends Kohana_Model
                 $oem = $this->getSearchArticle($oem);
 
                 if (!empty($oem) && !empty($cells[1]) && !empty($cells[2])) {
-                    if (!isset($loadCrosses[$oem][0][0])) {
-                        $loadCrosses[$oem][0][0] = [];
+                    if (!isset($loadCrosses[$oem][0][0][0])) {
+                        $loadCrosses[$oem][0][0][0] = [];
                     }
 
-                    $loadCrosses[$oem][0][0][] = ['brand' => $cells[1], 'article' => $this->getSearchArticle($cells[2])];
+                    $loadCrosses[$oem][0][0][0][] = ['brand' => $cells[1], 'article' => $this->getSearchArticle($cells[2])];
                 }
             }
         }
