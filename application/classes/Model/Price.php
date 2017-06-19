@@ -199,6 +199,8 @@ class Model_Price extends Kohana_Model
                 'name' => Arr::get($row, $settings['name']),
                 'quantity' => Arr::get($row, $settings['quantity']),
                 'price' => Arr::get($row, $settings['price']),
+                'oem' => Arr::get($row, $settings['oem'], ''),
+                'crosses' => Arr::get($row, $settings['crosses'], ''),
             ];
         }
 
@@ -232,6 +234,8 @@ class Model_Price extends Kohana_Model
                 'name' => Arr::get($row, $settings['name']),
                 'quantity' => Arr::get($row, $settings['quantity']),
                 'price' => Arr::get($row, $settings['price']),
+                'oem' => Arr::get($row, $settings['oem'], ''),
+                'crosses' => Arr::get($row, $settings['crosses'], ''),
             ];
         }
 
@@ -254,6 +258,8 @@ class Model_Price extends Kohana_Model
                 'name' => Arr::get($cells, 2),
                 'quantity' => Arr::get($cells, 4),
                 'price' => Arr::get($cells, 3),
+                'oem' => Arr::get($cells, 5, ''),
+                'crosses' => Arr::get($cells, 6, ''),
             ];
         }
 
@@ -307,8 +313,8 @@ class Model_Price extends Kohana_Model
                     $value['name'],
                     $value['price'],
                     $value['article'],
-                    '',
-                    '',
+                    $value['usage'],
+                    $value['crosses'],
                     '',
                     $value['quantity'],
                     $updateTask
