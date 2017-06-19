@@ -1257,7 +1257,7 @@ class Model_CRM extends Kohana_Model
                 str_replace(chr(10),'',str_replace('\\n','',trim($row['usages']))),
                 str_replace(chr(10),'',str_replace('\\n','',$row['crosses'])),
                 str_replace(chr(10),'',str_replace('\\n','',trim($row['images']))),
-                $row['quantity']
+                'Под заказ, в течении дня'//$row['quantity']
             );
             fwrite($file, mb_convert_encoding(str_replace(chr(10), '', $line) . chr(10), 'CP-1251'));
         }
