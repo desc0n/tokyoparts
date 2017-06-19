@@ -1110,7 +1110,7 @@ class Model_CRM extends Kohana_Model
      *
      * @return int
      */
-    private function addOemCrosses($oem, $source)
+    public function addOemCrosses($oem, $source)
     {
         $oemCrosses = $this->findOemCrosses($oem);
 
@@ -1143,7 +1143,7 @@ class Model_CRM extends Kohana_Model
      * @param int $oemCrossesId
      * @return array
      */
-    private function findCrossesByOemId($oemCrossesId)
+    public function findCrossesByOemId($oemCrossesId)
     {
         return DB::select()
             ->from('crosses__crosses')

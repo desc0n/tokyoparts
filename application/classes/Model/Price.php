@@ -360,6 +360,9 @@ class Model_Price extends Kohana_Model
      */
     public function loadSupplierPrice(array $data, $supplierId, $updateTask)
     {
+        /** @var Model_CRM $crmModel */
+        $crmModel = Model::factory('CRM');
+
         foreach ($data as $row) {
             $validData = $this->validateLoadPrice((int)$supplierId, $row['brand'], (string)$row['article'], $row['name'], $row['price'], $row['quantity']);
 
@@ -368,6 +371,14 @@ class Model_Price extends Kohana_Model
 
             if (!empty($validData)) {
                 $this->setSupplierItem($validData);
+
+                if (!empty($validData['usage'])) {
+                    $cars = explode(',', $validData['usage']);
+                    foreach ($cars as $car) {
+                        $car = preg_replace('/[^[:print:]]\"/', '', trim($car, '\r\n'));
+                        $crmModel->loadUsage($validData['brand'], $validData['article'], $car);
+                    }
+                }
             }
         }
 
