@@ -128,6 +128,8 @@ class Model_API extends Kohana_Model
                 return $article;
             case 'uniqom':
                 return [
+                    'login' => $this->apiSettings[$supplier]['login'],
+                    'password' => $this->apiSettings[$supplier]['password'],
                     'term' => $article,
                 ];
         }
