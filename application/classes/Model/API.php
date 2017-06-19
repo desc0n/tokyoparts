@@ -193,7 +193,7 @@ class Model_API extends Kohana_Model
     {
 //        $response = '{"id": 4572,"header": "Щетка стеклоочистителя зимн. Avantech Snowguard 380мм ( 15&#180;&#180; )","brand_id": 11,"brand": "AVANTECH","article_code": "S-15","clone_key": "","variation_code": "380мм ( 15&#180;&#180; )","category_id": 299,"mult_amount": 1,"deposit_storages": [{"id": 56,"header": "Тухачевского","deposit": 49,"days": 0,"price": 287.28},{"id": 76,"header": "ЦРС","deposit": 50,"days": 0,"price": 287.28},{"id": 667,"header": "СВХ","deposit": 0,"days": 2,"price": 287.28}],"images": [{"img100": "/uploads/items/thumb/100_100_0_20.jpg","img210": "/uploads/items/thumb/210_210_0_20.jpg","img130": "/uploads/items/thumb/130_80_0_20.jpg","big": "/uploads/items/20.jpg"}],"price": 287.28}';
         $data = [];
-        $responseData = json_decode($response, true);
+        $responseData = Arr::get(json_decode($response, true), 'goods', []);
 
         if(!empty($responseData['deposit_storages'])) {
             foreach ($responseData['deposit_storages'] as $result) {
