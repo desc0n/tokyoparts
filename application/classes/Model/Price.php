@@ -219,8 +219,8 @@ class Model_Price extends Kohana_Model
 
         $lines = file($fileName);
 
-        foreach ($lines as $line) {
-            if ($settings['ignoreFirstRow'] && $line === current($lines)) {
+        foreach ($lines as $lineNumber => $line) {
+            if ($settings['ignoreFirstRow'] >= $lineNumber) {
                 continue;
             }
 
@@ -313,8 +313,8 @@ class Model_Price extends Kohana_Model
                     $value['name'],
                     $value['price'],
                     $value['article'],
-                    $value['usage'],
-                    $value['crosses'],
+                    preg_replace('/[\n\t\r\]+/', '', $value['usage']),
+                    preg_replace('/[\n\t\r\]+/', '', $value['crosses']),
                     '',
                     $value['quantity'],
                     $updateTask
