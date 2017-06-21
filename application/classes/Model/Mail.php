@@ -91,7 +91,7 @@ class Model_Mail extends Kohana_Model
                     $parameters = $this->getParametersFromStructure($part);
 
                     if (isset($parameters['filename'])) {
-                        if ($this->saveAs($settings, $part, $messageId, ($id + 1), $parameters['filename'])) {
+                        if ($this->saveAs($settings, $part, $messageId, ($id + 1), preg_replace('/[=?]+/', '', $parameters['filename']))) {
                             DB::insert('mail__messages', ['supplier_id', 'uid', 'filename', 'created_at'])
                                 ->values([$supplierId, $messageId, $parameters['filename'], DB::expr('NOW()')])
                                 ->execute()
@@ -153,7 +153,8 @@ class Model_Mail extends Kohana_Model
             $zip = new ZipArchive;
 
             if ($zip->open($path) === TRUE) {
-                $zip->extractTo($dirname);
+                $zip->renameIndex(0, $settings['file']);
+                $zip->extractTo($dirname, $zip->getNameIndex(0));
                 $zip->close();
             }
         }

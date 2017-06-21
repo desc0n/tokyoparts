@@ -311,12 +311,12 @@ class Model_Price extends Kohana_Model
                     $value['brand'],
                     $crmModel->getSearchArticle((string)$value['article']),
                     $value['name'],
-                    $value['price'],
+                    $this->validatePrice($value['price']),
                     $value['article'],
-                    preg_replace('/[\n\t\r\]+/', '', $value['usage']),
-                    preg_replace('/[\n\t\r\]+/', '', $value['crosses']),
+                    preg_replace('/[\n\t\r]+/', '', $value['usage']),
+                    preg_replace('/[\n\t\r]+/', '', $value['crosses']),
                     '',
-                    $value['quantity'],
+                    $this->validateQuantity($value['quantity']),
                     $updateTask
                 ]);
 
@@ -559,6 +559,7 @@ class Model_Price extends Kohana_Model
             'больше 10' => 15,
             '10-100' => 20,
             '10100' => 20,
+            '> 10' => 15,
         ];
 
         $value = Arr::get($replaceVariant, $value, $value);
