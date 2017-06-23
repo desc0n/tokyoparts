@@ -83,7 +83,18 @@ class Model_Mail extends Kohana_Model
      */
     public function loadAttachmentData($supplierId, $settings, $messagesIds)
     {
+        $issetMessagesId = DB::select()
+            ->from('mail__messages')
+            ->where('supplier_id', '=', $supplierId)
+            ->execute()
+            ->as_array(null, 'uid')
+        ;
+
         foreach ($messagesIds as $messageId) {
+            if (in_array($messageId, $issetMessagesId, null)) {
+                continue;
+            }
+
             $structure = $this->getStructure($messageId);
 
             if (isset($structure->parts)) {

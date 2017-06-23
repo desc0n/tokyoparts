@@ -169,14 +169,14 @@ class Model_Price extends Kohana_Model
         ;
 
         $date = new \DateTime(!$maxCreatedAt ? null : $maxCreatedAt);
-        $messages = $mailModel->search(sprintf('SINCE "%s" FROM "%s"', $date->format('d-M-Y'), $settings['from']), 3);
+        $messagesIds = $mailModel->search(sprintf('SINCE "%s" FROM "%s"', $date->format('d-M-Y'), $settings['from']), 3);
 
-        if (count($messages) === 0) {
+        if (count($messagesIds) === 0) {
             //Поиск не прочитанных писем, которые могли не попасть в предыдущий поиск
-            $messages = $mailModel->search('UNSEEN', 3);
+            $messagesIds = $mailModel->search('UNSEEN', 3);
         }
 
-        $mailModel->loadAttachmentData($supplierId, $settings, $messages);
+        $mailModel->loadAttachmentData($supplierId, $settings, $messagesIds);
     }
 
     /**
