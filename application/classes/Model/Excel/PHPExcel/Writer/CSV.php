@@ -46,7 +46,7 @@ class PHPExcel_Writer_CSV extends PHPExcel_Writer_Abstract implements PHPExcel_W
 	 *
 	 * @var string
 	 */
-	private $_delimiter	= ',';
+	private $_delimiter	= ';';
 
 	/**
 	 * Enclosure

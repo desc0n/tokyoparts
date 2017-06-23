@@ -188,23 +188,10 @@ class Model_Price extends Kohana_Model
     public function parseXlsFile($settings, $fileName)
     {
         $objPHPExcel = Model::factory('Excel_PHPExcel_IOFactory')->load($fileName);
-        $positions = $objPHPExcel->getActiveSheet()->toArray(null, true, true, true);
+        $objWriter = Model::factory('Excel_PHPExcel_IOFactory')->createWriter($objPHPExcel, 'CSV');
+        $objWriter->save(dirname($fileName) . '/price.csv');
 
-        $data = [];
-
-        foreach ($positions as $row) {
-            $data[] = [
-                'brand' => Arr::get($row, $settings['brand']),
-                'article' => (string)Arr::get($row, $settings['article']),
-                'name' => Arr::get($row, $settings['name']),
-                'quantity' => Arr::get($row, $settings['quantity']),
-                'price' => Arr::get($row, $settings['price']),
-                'usage' => Arr::get($row, $settings['usage'], ''),
-                'crosses' => Arr::get($row, $settings['crosses'], ''),
-            ];
-        }
-
-        return $data;
+        return $this->parseCsvFile($settings, dirname($fileName) . '/price.csv');
     }
 
     /**
