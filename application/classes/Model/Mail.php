@@ -175,9 +175,7 @@ class Model_Mail extends Kohana_Model
                 $zip->close();
 
                 if (preg_match('/(.xlsx|.XLSX)$/', $settings['file'])) {
-                    $objPHPExcel = Model::factory('Excel_PHPExcel_IOFactory')->load($dirname . '/' . $priceName);
-                    $objWriter = Model::factory('Excel_PHPExcel_IOFactory')->createWriter($objPHPExcel, 'Excel2007');
-                    $objWriter->save($dirname . '/price.xlsx');
+                    copy($dirname . '/' . $priceName, $dirname . '/price.xlsx');
                 }
             }
         }
