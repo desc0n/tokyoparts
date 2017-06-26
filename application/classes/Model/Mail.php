@@ -164,9 +164,21 @@ class Model_Mail extends Kohana_Model
             $zip = new ZipArchive;
 
             if ($zip->open($path) === TRUE) {
-                $zip->renameIndex(0, $settings['file']);
-                $zip->extractTo($dirname, $zip->getNameIndex(0));
+                $cdir = scandir($dirname);
+                foreach ($cdir as $value) {
+                    if (preg_match('/.xlsx$/', $value)) {
+                        unlink($dirname . '/' . $value);
+                    }
+                }
+                $priceName = $zip->getNameIndex(0);
+                $zip->extractTo($dirname);
                 $zip->close();
+
+                if (preg_match('/(.xlsx|.XLSX)$/', $settings['file'])) {
+                    $objPHPExcel = Model::factory('Excel_PHPExcel_IOFactory')->load($dirname . '/' . $priceName);
+                    $objWriter = Model::factory('Excel_PHPExcel_IOFactory')->createWriter($objPHPExcel, 'Excel2007');
+                    $objWriter->save($dirname . '/price.xlsx');
+                }
             }
         }
 
