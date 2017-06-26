@@ -192,7 +192,7 @@ class Model_Price extends Kohana_Model
         }
 
         $objPHPExcel = Model::factory('Excel_PHPExcel_IOFactory')->load($fileName);
-        $objWriter = Model::factory('Excel_PHPExcel_IOFactory')->createWriter($objPHPExcel, 'Excel207');
+        $objWriter = Model::factory('Excel_PHPExcel_IOFactory')->createWriter($objPHPExcel, 'Excel2007');
         $objWriter->save(dirname($fileName) . '/price_tmp.xlsx');
 
         $objPHPExcel = Model::factory('Excel_PHPExcel_IOFactory')->load(dirname($fileName) . '/price_tmp.xlsx');
