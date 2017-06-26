@@ -289,12 +289,10 @@ class Controller_Crm extends Controller
                 $this->request->query('brand'),
                 $this->request->query('article')
             ))
-            ->set('imagesCount', count($this->crmModel->getAllItemsImages(
-                0,
-                0,
+            ->set('imagesCount', $this->crmModel->getCountAllItemsImages(
                 $this->request->query('brand'),
                 $this->request->query('article')
-            )))
+            ))
             ->set('brand', $this->request->query('brand'))
             ->set('article', $this->request->query('article'))
             ->set('page', (int)Arr::get($_GET, 'page', 1))
@@ -318,12 +316,10 @@ class Controller_Crm extends Controller
                 $this->request->query('brand'),
                 $this->request->query('article')
             ))
-            ->set('usagesCount', count($this->crmModel->getAllItemsUsages(
-                0,
-                0,
+            ->set('usagesCount', $this->crmModel->getCountAllItemsUsages(
                 $this->request->query('brand'),
                 $this->request->query('article')
-            )))
+            ))
             ->set('brand', $this->request->query('brand'))
             ->set('article', $this->request->query('article'))
             ->set('page', (int)Arr::get($_GET, 'page', 1))

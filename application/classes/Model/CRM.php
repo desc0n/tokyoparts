@@ -1476,6 +1476,24 @@ class Model_CRM extends Kohana_Model
     }
 
     /**
+     * @param string $brand
+     * @param string $article
+     * @return int
+     */
+    public function getCountAllItemsImages($brand, $article)
+    {
+        $query = DB::select()->from('items__images');
+
+        $query = !empty($brand) ? $query->where('brand', '=', $brand) : $query;
+        $query = !empty($article) ? $query->where('article', '=', $article) : $query;
+
+        return $query
+            ->execute()
+            ->count()
+            ;
+    }
+
+    /**
      * @param int $id
      */
     public function deleteItemImage($id)
@@ -1636,6 +1654,24 @@ class Model_CRM extends Kohana_Model
         return $query
             ->execute()
             ->as_array()
+            ;
+    }
+
+    /**
+     * @param string $brand
+     * @param string $article
+     * @return int
+     */
+    public function getCountAllItemsUsages($brand, $article)
+    {
+        $query = DB::select()->from('items__usages');
+
+        $query = !empty($brand) ? $query->where('brand', '=', $brand) : $query;
+        $query = !empty($article) ? $query->where('article', '=', $article) : $query;
+
+        return $query
+            ->execute()
+            ->count()
             ;
     }
 
