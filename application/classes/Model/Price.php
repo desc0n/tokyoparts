@@ -191,10 +191,6 @@ class Model_Price extends Kohana_Model
             unlink(dirname($fileName) . '/price.csv');
         }
 
-        if(is_file(dirname($fileName) . '/price.xlsx')) {
-            unlink(dirname($fileName) . '/price.xlsx');
-        }
-
         $objPHPExcel = Model::factory('Excel_PHPExcel_IOFactory')->load($fileName);
         $objWriter = Model::factory('Excel_PHPExcel_IOFactory')->createWriter($objPHPExcel, 'CSV');
         $objWriter->save(dirname($fileName) . '/price.csv');
