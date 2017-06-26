@@ -164,10 +164,6 @@ class Model_Mail extends Kohana_Model
             $zip = new ZipArchive;
 
             if ($zip->open($path) === TRUE) {
-                if(is_file($dirname . '/' . $settings['file'])) {
-                    unlink($dirname . '/' . $settings['file']);
-                }
-
                 $zip->renameIndex(0, $settings['file']);
                 $zip->extractTo($dirname, $zip->getNameIndex(0));
                 $zip->close();

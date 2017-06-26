@@ -187,10 +187,6 @@ class Model_Price extends Kohana_Model
      */
     public function parseXlsFile($settings, $fileName)
     {
-        if(is_file(dirname($fileName) . '/price.csv')) {
-            unlink(dirname($fileName) . '/price.csv');
-        }
-
         $objPHPExcel = Model::factory('Excel_PHPExcel_IOFactory')->load($fileName);
         $objWriter = Model::factory('Excel_PHPExcel_IOFactory')->createWriter($objPHPExcel, 'Excel2007');
         $objWriter->save(dirname($fileName) . '/price_tmp.xlsx');
