@@ -166,7 +166,7 @@ class Model_Mail extends Kohana_Model
             if ($zip->open($path) === TRUE) {
                 $cdir = scandir($dirname);
                 foreach ($cdir as $value) {
-                    if (preg_match('/.xlsx$/', $value)) {
+                    if (preg_match('/(.xlsx|.csv)$/', $value)) {
                         unlink($dirname . '/' . $value);
                     }
                 }
@@ -176,6 +176,10 @@ class Model_Mail extends Kohana_Model
 
                 if (preg_match('/(.xlsx|.XLSX)$/', $settings['file'])) {
                     copy($dirname . '/' . $priceName, $dirname . '/price.xlsx');
+                }
+
+                if (preg_match('/(.csv|.CSV)$/', $settings['file'])) {
+                    copy($dirname . '/' . $priceName, $dirname . '/price.csv');
                 }
             }
         }

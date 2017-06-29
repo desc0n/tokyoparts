@@ -223,6 +223,7 @@ class Model_Price extends Kohana_Model
                 'price' => Arr::get($row, $settings['price']),
                 'usage' => Arr::get($row, $settings['usage'], ''),
                 'crosses' => Arr::get($row, $settings['crosses'], ''),
+                'vendor_id' => Arr::get($row, $settings['vendor_id']),
             ];
         }
 
@@ -247,6 +248,7 @@ class Model_Price extends Kohana_Model
                 'price' => Arr::get($cells, 3),
                 'usage' => Arr::get($cells, 5, ''),
                 'crosses' => Arr::get($cells, 6, ''),
+                'vendor_id' => Arr::get($cells, 6),
             ];
         }
 
@@ -282,7 +284,8 @@ class Model_Price extends Kohana_Model
             'crosses',
             'images',
             'quantity',
-            'update_task'
+            'update_task',
+            'vendor_id'
         ]);
         $queryCount = 0;
 
@@ -304,7 +307,8 @@ class Model_Price extends Kohana_Model
                     preg_replace('/[\n\t\r]+/', '', $value['crosses']),
                     '',
                     $this->validateQuantity($value['quantity']),
-                    $updateTask
+                    $updateTask,
+                    $value['vendor_id'],
                 ]);
 
             unset($data[$key]);
@@ -324,7 +328,8 @@ class Model_Price extends Kohana_Model
                     'crosses',
                     'images',
                     'quantity',
-                    'update_task'
+                    'update_task',
+                    'vendor_id'
                 ]);
             }
         }
