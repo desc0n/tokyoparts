@@ -1337,8 +1337,9 @@ class Model_CRM extends Kohana_Model
      * @param array $files
      * @param string $outerLink
      * @param string $localSrc
+     * @param boolean $forceInsert
      */
-    public function loadImage($brand, $article, $files = [], $outerLink, $localSrc = null)
+    public function loadImage($brand, $article, $files = [], $outerLink, $localSrc = null, $forceInsert = false)
     {
         if (empty($brand) || empty($article)) {
             return;
@@ -1351,7 +1352,7 @@ class Model_CRM extends Kohana_Model
         $itemImageId = null;
         $itemsImages = $this->findItemImages($brand, $article);
 
-        if (count($itemsImages) === 0) {
+        if (count($itemsImages) === 0 || $forceInsert) {
             $this->insertNewItemImage($brand, $article, $files, $outerLink, $localSrc);
 
             return;

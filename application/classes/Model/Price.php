@@ -308,7 +308,7 @@ class Model_Price extends Kohana_Model
                     '',
                     $this->validateQuantity($value['quantity']),
                     $updateTask,
-                    $value['vendor_id'],
+                    $value['vendor_id']
                 ]);
 
             unset($data[$key]);
