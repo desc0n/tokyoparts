@@ -405,7 +405,7 @@ class Model_Price extends Kohana_Model
         }
 
         $price = $this->validatePrice($price);
-        $quantity = $this->validateQuantity($quantity);
+        $quantity = $this->validateQuantity($crmModel->clearWrongSimbols($quantity));
 
         return [$supplierId, $brand, $article, $crmModel->getSearchArticle($article), $name, $price, $quantity, md5($brand . $article)];
     }
@@ -551,6 +551,7 @@ class Model_Price extends Kohana_Model
             'больше 10' => 15,
             '10-100' => 20,
             '10100' => 20,
+            '>10' => 15,
             '> 10' => 15,
         ];
 

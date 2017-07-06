@@ -102,9 +102,10 @@ class Model_Mail extends Kohana_Model
                     $parameters = $this->getParametersFromStructure($part);
 
                     if (isset($parameters['filename'])) {
-                        if ($this->saveAs($settings, $part, $messageId, ($id + 1), preg_replace('/[=?]+/', '', $parameters['filename']))) {
+                        $filename = mb_decode_mimeheader($parameters['filename']);
+                        if ($this->saveAs($settings, $part, $messageId, ($id + 1), preg_replace('/[=?]+/', '', $filename))) {
                             DB::insert('mail__messages', ['supplier_id', 'uid', 'filename', 'created_at'])
-                                ->values([$supplierId, $messageId, $parameters['filename'], DB::expr('NOW()')])
+                                ->values([$supplierId, $messageId, $filename, DB::expr('NOW()')])
                                 ->execute()
                             ;
                         }
@@ -160,31 +161,56 @@ class Model_Mail extends Kohana_Model
 
         fclose($filePointer);
 
+        $cdir = scandir($dirname);
+        foreach ($cdir as $value) {
+            if (preg_match('/(.xlsx|.csv)$/', $value)) {
+                unlink($dirname . '/' . $value);
+            }
+        }
+
         if ($settings['archive']) {
             $zip = new ZipArchive;
 
             if ($zip->open($path) === TRUE) {
-                $cdir = scandir($dirname);
-                foreach ($cdir as $value) {
-                    if (preg_match('/(.xlsx|.csv)$/', $value)) {
-                        unlink($dirname . '/' . $value);
-                    }
-                }
                 $priceName = $zip->getNameIndex(0);
                 $zip->extractTo($dirname);
                 $zip->close();
 
-                if (preg_match('/(.xlsx|.XLSX)$/', $settings['file'])) {
-                    copy($dirname . '/' . $priceName, $dirname . '/price.xlsx');
+                if ($settings['rename']) {
+                    $this->renameFile($settings['file'], $dirname , $priceName);
                 }
-
-                if (preg_match('/(.csv|.CSV)$/', $settings['file'])) {
-                    copy($dirname . '/' . $priceName, $dirname . '/price.csv');
-                }
+            }
+        } else {
+            if ($settings['rename']) {
+                $this->renameFile($settings['file'], $dirname , $filename);
             }
         }
 
         return $result;
+    }
+
+    /**
+     * @param string $settingsFile
+     * @param string $dirname
+     * @param string $origFilename
+     */
+    public function renameFile($settingsFile, $dirname, $origFilename)
+    {
+        switch (true){
+            case preg_match('/(.xlsx|.XLSX)$/', $settingsFile):
+                $filename = 'price.xlsx';
+                break;
+            case preg_match('/(.xls|.XLS)$/', $settingsFile):
+                $filename = 'price.xls';
+                break;
+            case preg_match('/(.csv|.CSV)$/', $settingsFile):
+                $filename = 'price.csv';
+                break;
+            default:
+                return;
+        }
+
+        copy($dirname . '/' . $origFilename, $dirname . '/' . $filename);
     }
 
     /**

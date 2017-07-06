@@ -1686,6 +1686,16 @@ class Model_CRM extends Kohana_Model
             ->execute()
         ;
     }
+
+    /**
+     * @param string$string
+     *
+     * @return string
+     */
+    public function clearWrongSimbols($string)
+    {
+        return preg_replace('/[\n\r\t"]+/', '', $string);
+    }
 }
 ?>
 
