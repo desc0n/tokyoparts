@@ -220,7 +220,7 @@ class Model_Price extends Kohana_Model
                 'article' => (string)Arr::get($row, $settings['article']),
                 'name' => Arr::get($row, $settings['name']),
                 'quantity' => Arr::get($row, $settings['quantity']),
-                'price' => Arr::get($row, $settings['price']),
+                'price' => $settings['parsingType'] === 'Excel' ? preg_replace('/[,]+/', '', Arr::get($row, $settings['price'])) : Arr::get($row, $settings['price']),
                 'usage' => Arr::get($row, $settings['usage'], ''),
                 'crosses' => Arr::get($row, $settings['crosses'], ''),
                 'vendor_id' => Arr::get($row, $settings['vendor_id']),
