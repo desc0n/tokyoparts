@@ -138,12 +138,12 @@
                 Поставщик:
             </td>
             <td class='empty' style='border-bottom: 1px solid;' align=center>
-                Индивидуальный предприниматель
+                Автомагазин "Токио"
             </td>
             <td class='empty' width=2>
             </td>
             <td class='empty' style='border-bottom: 1px solid;' align=left>
-                Аксенов М. С.
+
             </td>
             <td class='empty' width=2>
             </td>
