@@ -14,8 +14,8 @@
     </style>
 </head>
 <div style='width:800px;font-family: Arial;font-size:11pt;'>
-    <p>Индивидуальный предприниматель Аксенов Максим Сергеевич </p>
-    <p>Приморский край, г. Владивосток, ул. Иртышская, д. 23</p>
+    <p>Автомагазин "Токио" </p>
+    <p>Приморский край, г. Владивосток, Народный пр-т 28, ТЦ "Рондо", каб. 321</p>
     <p></p>
 <!--    <p style='font-size:8pt;'>Образец заполнения платежного поручения</p>-->
 <!--    <table width=800 cellpadding='5' cellspacing='0' style='border-collapse: collapse;font-size: 11pt;'>-->
@@ -59,13 +59,13 @@
 <!--        </tr>-->
 <!--        <tr>-->
 <!--            <td colspan=4>-->
-<!--                Индивидуальный предприниматель Аксенов Максим Сергеевич-->
+<!--                Автомагазин "Токио"-->
 <!--                <p style='font-size:8pt;'>Получатель</p>-->
 <!--            </td>-->
 <!--        </tr>-->
 <!--    </table>-->
     <p style='margin-top:20px;font-weight:bold;font-size:14pt;text-align:center;'>Счет на оплату № <?=$order['id'];?> от <?=date("d.m.Y");?> г.</p><br>
-    <p>Поставщик: Индивидуальный предприниматель Аксенов Максим Сергеевич <br>
+    <p>Поставщик: Автомагазин "Токио" <br>
         Покупатель: <?=$order['second_name'];?> <?=$order['first_name'];?> <?=$order['father_name'];?></p><br>
     <table width=800 cellpadding='5' cellspacing='0' style='border-collapse: collapse;font-size: 11pt;'>
         <tr>
@@ -86,7 +86,7 @@
         foreach ($orderSpares as $spare) {?>
             <tr>
                 <td align=center><?=$n;?></td>
-                <td><?=$spare['name'];?> <?=$spare['brand'];?> <?=substr($spare['article'], 0, (strlen($spare['article']) - 3));?>***</td>
+                <td><?=$spare['name'];?> <?=$spare['brand'];?> <?=$spare['article'];?></td>
                 <td align=right><?=$spare['quantity'];?></td>
                 <td align=center>шт.</td>
                 <td align=right><?=$spare['offer_price'];?>.00</td>
