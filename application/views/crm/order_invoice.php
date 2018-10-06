@@ -15,7 +15,7 @@
 </head>
 <div style='width:800px;font-family: Arial;font-size:11pt;'>
     <p>Автомагазин "Токио" </p>
-    <p>Приморский край, г. Владивосток, Народный пр-т 28, ТЦ "Рондо", каб. 321</p>
+<!--    <p>Приморский край, г. Владивосток, Народный пр-т 28, ТЦ "Рондо", каб. 321</p>-->
     <p></p>
 <!--    <p style='font-size:8pt;'>Образец заполнения платежного поручения</p>-->
 <!--    <table width=800 cellpadding='5' cellspacing='0' style='border-collapse: collapse;font-size: 11pt;'>-->
